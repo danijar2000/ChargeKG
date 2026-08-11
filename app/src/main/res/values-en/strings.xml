@@ -80,6 +80,7 @@
 
     <string name="banner_offline">No connection — showing the last loaded map. Addresses, connectors and prices are correct, but how many ports are free right now is unknown.</string>
     <string name="banner_stale">%1$d stations have stale availability — their network is not responding. They are shown in grey: addresses and prices are correct, the number of free ports is unknown.</string>
+    <string name="banner_no_connection">No connection. Check the internet and refresh — the map appears as soon as the server answers.</string>
     <string name="banner_error">Could not refresh the data: %1$s</string>
     <string name="banner_error_cached">Could not refresh the data: %1$s. Showing the last loaded copy.</string>
 

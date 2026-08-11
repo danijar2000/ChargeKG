@@ -43,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chargekg.app.R
 import com.chargekg.app.container
 import com.chargekg.app.data.DataOrigin
+import com.chargekg.app.data.LoadError
 import com.chargekg.app.update.UpdateChecker
 import com.chargekg.app.util.getLocationOnce
 import com.chargekg.app.util.hasLocationPermission
@@ -240,11 +241,18 @@ private fun MapButton(icon: ImageVector, labelRes: Int, onClick: () -> Unit) {
  */
 @Composable
 private fun Banner(state: com.chargekg.app.data.StationsState) {
+    val error = state.error
+    val hasData = state.stations.isNotEmpty()
     val text = when {
-        state.error != null && state.stations.isNotEmpty() ->
-            stringResource(R.string.banner_error_cached, state.error)
+        // Сырой текст исключения OkHttp приходит по-английски: при выбранном
+        // русском он выглядел бы в интерфейсе чужим мусором.
+        error is LoadError.Offline && hasData -> stringResource(R.string.banner_offline)
+        error is LoadError.Offline -> stringResource(R.string.banner_no_connection)
 
-        state.error != null -> stringResource(R.string.banner_error, state.error)
+        error is LoadError.Message && hasData ->
+            stringResource(R.string.banner_error_cached, error.text)
+
+        error is LoadError.Message -> stringResource(R.string.banner_error, error.text)
 
         state.origin == DataOrigin.CACHE -> stringResource(R.string.banner_offline)
 

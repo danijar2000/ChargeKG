@@ -3,16 +3,32 @@ package com.chargekg.app.data
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 /** Откуда взяты станции, лежащие сейчас в [StationsState.stations]. */
 enum class DataOrigin { NONE, CACHE, NETWORK }
+
+/**
+ * Что именно не получилось. Нужно, чтобы не показывать человеку сырой текст
+ * исключения: он приходит от OkHttp по-английски и при выбранном русском
+ * выглядит как чужой мусор в интерфейсе.
+ */
+sealed interface LoadError {
+    /** Нет связи — самый частый случай, объясняется своими словами. */
+    data object Offline : LoadError
+
+    /** Всё остальное: ответ сервера или разбор. Текст осмысленный. */
+    data class Message(val text: String) : LoadError
+}
 
 data class StationsState(
     val stations: List<Station> = emptyList(),
     val origin: DataOrigin = DataOrigin.NONE,
     val loading: Boolean = false,
-    /** Текст последней ошибки обновления; null — ошибок не было. */
-    val error: String? = null,
+    /** Последняя ошибка обновления; null — ошибок не было. */
+    val error: LoadError? = null,
 ) {
     /** Сколько станций сервер пометил недостоверными по занятости. */
     val staleCount: Int get() = stations.count { it.unknownBusy }
@@ -78,12 +94,16 @@ class StationRepository(
         } catch (e: Exception) {
             // Ловим и IOException, и JSONException: битый ответ для человека
             // ничем не отличается от отсутствия связи — показанное остаётся.
-            _state.value = _state.value.copy(
-                loading = false,
-                error = e.message?.takeIf { it.isNotBlank() } ?: e::class.java.simpleName,
-            )
+            _state.value = _state.value.copy(loading = false, error = toLoadError(e))
         }
     }
 
     fun station(id: String): Station? = _state.value.stations.firstOrNull { it.id == id }
+
+    private fun toLoadError(e: Exception): LoadError = when (e) {
+        // ApiException несёт пояснение сервера по-русски — его и показываем.
+        is ApiException -> LoadError.Message(e.message.orEmpty())
+        is UnknownHostException, is ConnectException, is SocketTimeoutException -> LoadError.Offline
+        else -> LoadError.Message(e.message?.takeIf { it.isNotBlank() } ?: e::class.java.simpleName)
+    }
 }
