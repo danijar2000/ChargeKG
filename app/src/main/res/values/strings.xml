@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Русский — язык по умолчанию, как и на сайте. Строки перенесены из web/i18n.js. -->
+<resources>
+    <!-- Название бренда одинаково во всех языках. -->
+    <string name="app_name" translatable="false">ChargeKG</string>
+    <string name="app_tagline">Карта зарядных станций Кыргызстана</string>
+
+    <string name="btn_locate">Показать, где я</string>
+    <string name="btn_about">О приложении</string>
+    <string name="btn_filters">Фильтры</string>
+    <string name="btn_share">Поделиться</string>
+    <string name="btn_list">Список станций</string>
+    <string name="btn_close">Закрыть</string>
+    <string name="btn_lang">Язык</string>
+    <string name="btn_reset">Сбросить</string>
+    <string name="btn_done">Готово</string>
+    <string name="btn_ok">Понятно</string>
+    <string name="btn_cancel">Отмена</string>
+    <string name="btn_settings">Настройки</string>
+    <string name="btn_retry">Повторить</string>
+    <string name="btn_refresh">Обновить данные</string>
+    <string name="btn_copy">Скопировать координаты</string>
+
+    <string name="list_head">Ближайшие</string>
+    <string name="list_loading">Загрузка…</string>
+    <string name="list_no_match">Ничего не подошло под настройки. Смягчите фильтры.</string>
+    <string name="list_empty">Станций нет.</string>
+
+    <string name="filters_title">Фильтры</string>
+    <string name="filters_company">Компания</string>
+    <string name="filters_type">Тип коннектора</string>
+    <string name="filters_power">Мощность станции</string>
+    <string name="filters_only_free">Только свободные</string>
+    <string name="filters_nav">Навигатор для маршрутов</string>
+    <string name="filters_nav_hint">Если приложение не установлено, откроется веб-версия карт.</string>
+    <string name="filters_all">Все</string>
+
+    <string name="power_all">Все</string>
+    <string name="power_slow">Медленная</string>
+    <string name="power_fast">Быстрая</string>
+    <string name="power_ultra">Ультрабыстрая</string>
+
+    <string name="nav_auto">Автоматически</string>
+    <string name="nav_dgis">2ГИС</string>
+    <string name="nav_ynavi">Яндекс Навигатор</string>
+    <string name="nav_ymaps">Яндекс Карты</string>
+    <string name="nav_gmaps">Google Карты</string>
+    <string name="nav_ask">Спросить систему</string>
+
+    <string name="type_other">прочее</string>
+
+    <string name="unit_m">м</string>
+    <string name="unit_km">км</string>
+    <string name="unit_kw">кВт</string>
+    <string name="unit_som">сом</string>
+    <string name="unit_min">мин</string>
+    <string name="unit_hour">ч</string>
+    <string name="time_under_minute">меньше минуты</string>
+    <string name="dist_straight">%1$s по прямой</string>
+
+    <string name="station_price_unknown">цена не указана</string>
+    <string name="station_unknown_busy">занятость неизвестна</string>
+    <string name="station_free_of">%1$d из %2$d</string>
+    <string name="station_free">%1$d свободно</string>
+    <string name="station_route">Проложить маршрут</string>
+    <string name="station_app">Приложение сети</string>
+    <string name="station_open_app">Открыть приложение %1$s</string>
+    <string name="station_merged">Площадка из %1$d станций</string>
+    <string name="station_not_found">Станция не найдена</string>
+    <string name="station_copied">Координаты скопированы</string>
+    <string name="station_no_app">Приложение не установлено</string>
+    <string name="station_no_nav">Не найдено приложение для маршрута</string>
+
+    <string name="counts_unknown">%1$d станций · занятость неизвестна</string>
+    <string name="counts_known">%1$d станций · %2$d свободных портов из %3$d</string>
+
+    <string name="geo_from_me">от вашего местоположения</string>
+    <string name="geo_map_center">к центру карты</string>
+    <string name="geo_denied">Доступ к местоположению не дан — считаем от центра карты</string>
+    <string name="geo_unavailable">Местоположение недоступно</string>
+
+    <string name="share_text">Карта зарядных станций Кыргызстана: видно, где свободны порты.</string>
+
+    <string name="banner_offline">Нет связи — показана последняя загруженная карта. Адреса, разъёмы и цены верны, а сколько портов свободно сейчас, неизвестно.</string>
+    <string name="banner_stale">У %1$d станций занятость устарела — сеть не отвечает. Они показаны серым: адреса и цены верны, число свободных портов неизвестно.</string>
+    <string name="banner_error">Не удалось обновить данные: %1$s</string>
+    <string name="banner_error_cached">Не удалось обновить данные: %1$s. Показано последнее загруженное.</string>
+
+    <string name="about_title">О приложении</string>
+    <string name="about_intro">Карта зарядных станций Кыргызстана. Показывает, где прямо сейчас свободны порты, чтобы не приезжать к занятой зарядке.</string>
+    <string name="about_source_h">Откуда данные</string>
+    <string name="about_source1">Из приложений четырёх сетей: SPARK, We way, EVION и Charge24. Приложение с ними не связано и ничего не продаёт — оно лишь собирает их карты в одну.</string>
+    <string name="about_source2">Занятость обновляется раз в пять минут. Между обновлениями картина может отставать: зарядка, занятая минуту назад, ещё показана свободной.</string>
+    <string name="about_pin_h">Метка станции</string>
+    <string name="about_pin1">Кольцо разбито по числу портов: зелёное — свободные, красное — занятые, серое — не в сети. В центре — сколько портов всего.</string>
+    <string name="about_pin2">Если сеть перестала отвечать, кольцо становится целиком серым: показать устаревшую занятость как настоящую значило бы ввести в заблуждение.</string>
+    <string name="about_price_h">Цены</string>
+    <string name="about_price">Показаны так, как их отдают сами сети. Скидки по времени суток в этих данных не отражены — проверяйте в приложении сети.</string>
+    <string name="about_version">Версия %1$s</string>
+    <string name="about_repo">Исходный код и релизы</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="settings_language">Язык</string>
+    <string name="settings_theme">Тема</string>
+    <string name="theme_system">Как в системе</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="settings_dynamic_color">Цвета из обоев</string>
+    <string name="settings_dynamic_color_hint">Подстраивает палитру под системную тему устройства.</string>
+
+    <string name="update_section">Обновление</string>
+    <string name="update_auto_check">Проверять обновления при запуске</string>
+    <string name="update_check_now">Проверить обновление</string>
+    <string name="update_checking">Проверяем…</string>
+    <string name="update_up_to_date">Установлена последняя версия</string>
+    <string name="update_available">Доступна версия %1$s</string>
+    <string name="update_size">Размер загрузки: %1$s</string>
+    <string name="update_install">Установить</string>
+    <string name="update_later">Позже</string>
+    <string name="update_downloading_start">Начинаем загрузку…</string>
+    <string name="update_downloading_progress">Скачивание: %1$d%%</string>
+    <string name="update_downloading_paused">Загрузка приостановлена</string>
+    <string name="update_downloading_done">Загрузка завершена</string>
+    <string name="update_download_notification">Обновление ChargeKG</string>
+    <string name="update_download_error">Ошибка загрузки (код %1$d)</string>
+    <string name="update_error_http">GitHub API: HTTP %1$d</string>
+    <string name="update_error_empty">Пустой ответ от GitHub</string>
+    <string name="update_error_no_tag">В ответе GitHub нет tag_name</string>
+    <string name="update_error_no_apk">В релизе %1$s нет APK</string>
+    <string name="update_needs_permission">Разрешите установку из этого источника</string>
+    <string name="update_needs_permission_hint">Android требует явного разрешения, чтобы приложение могло установить своё обновление.</string>
+    <string name="update_open_permission">Открыть настройки</string>
+</resources>

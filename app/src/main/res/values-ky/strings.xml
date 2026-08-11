@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_tagline">Кыргызстандын кубаттоо станцияларынын картасы</string>
+
+    <string name="btn_locate">Мен кайда экенимди көрсөт</string>
+    <string name="btn_about">Колдонмо жөнүндө</string>
+    <string name="btn_filters">Чыпкалар</string>
+    <string name="btn_share">Бөлүшүү</string>
+    <string name="btn_list">Станциялардын тизмеси</string>
+    <string name="btn_close">Жабуу</string>
+    <string name="btn_lang">Тил</string>
+    <string name="btn_reset">Тазалоо</string>
+    <string name="btn_done">Даяр</string>
+    <string name="btn_ok">Түшүнүктүү</string>
+    <string name="btn_cancel">Жокко чыгаруу</string>
+    <string name="btn_settings">Жөндөөлөр</string>
+    <string name="btn_retry">Кайталоо</string>
+    <string name="btn_refresh">Маалыматты жаңылоо</string>
+    <string name="btn_copy">Координаталарды көчүрүү</string>
+
+    <string name="list_head">Жакындагылар</string>
+    <string name="list_loading">Жүктөлүүдө…</string>
+    <string name="list_no_match">Тандоолорго эч нерсе туура келген жок. Чыпкаларды жумшартыңыз.</string>
+    <string name="list_empty">Станциялар жок.</string>
+
+    <string name="filters_title">Чыпкалар</string>
+    <string name="filters_company">Компания</string>
+    <string name="filters_type">Коннектордун түрү</string>
+    <string name="filters_power">Станциянын кубаттуулугу</string>
+    <string name="filters_only_free">Бош тургандары гана</string>
+    <string name="filters_nav">Маршрут үчүн навигатор</string>
+    <string name="filters_nav_hint">Эгер колдонмо орнотулбаган болсо, карталардын веб-версиясы ачылат.</string>
+    <string name="filters_all">Баары</string>
+
+    <string name="power_all">Баары</string>
+    <string name="power_slow">Жай</string>
+    <string name="power_fast">Тез</string>
+    <string name="power_ultra">Өтө тез</string>
+
+    <string name="nav_auto">Автоматтык түрдө</string>
+    <!-- Ниже — совпадает с русским: названия брендов и общепринятые сокращения. -->
+    <string name="nav_dgis">2ГИС</string>
+    <string name="nav_ynavi">Яндекс Навигатор</string>
+    <string name="nav_ymaps">Яндекс Карталар</string>
+    <string name="nav_gmaps">Google Карталар</string>
+    <string name="nav_ask">Системадан сурап көр</string>
+
+    <string name="type_other">башка</string>
+
+    <string name="unit_m">м</string>
+    <string name="unit_km">км</string>
+    <string name="unit_kw">кВт</string>
+    <string name="unit_som">сом</string>
+    <string name="unit_min">мүн</string>
+    <string name="unit_hour">с</string>
+    <string name="time_under_minute">бир мүнөттөн аз</string>
+    <string name="dist_straight">%1$s түз сызык менен</string>
+
+    <string name="station_price_unknown">баасы көрсөтүлгөн эмес</string>
+    <string name="station_unknown_busy">бош порттордун саны белгисиз</string>
+    <string name="station_free_of">%2$d ичинен %1$d</string>
+    <string name="station_free">%1$d бош</string>
+    <string name="station_route">Маршрут түзүү</string>
+    <string name="station_app">Тармактын колдонмосу</string>
+    <string name="station_open_app">%1$s колдонмосун ачуу</string>
+    <string name="station_merged">%1$d станциядан турган аянтча</string>
+    <string name="station_not_found">Станция табылган жок</string>
+    <string name="station_copied">Координаталар көчүрүлдү</string>
+    <string name="station_no_app">Колдонмо орнотулган эмес</string>
+    <string name="station_no_nav">Маршрут үчүн колдонмо табылган жок</string>
+
+    <string name="counts_unknown">%1$d станция · бош порттордун саны белгисиз</string>
+    <string name="counts_known">%1$d станция · %3$d порттун %2$d бош</string>
+
+    <string name="geo_from_me">сиздин жайгашкан жериңизден</string>
+    <string name="geo_map_center">картанын борборунан</string>
+    <string name="geo_denied">Жайгашкан жерге уруксат берилген жок — картанын борборунан эсептелет</string>
+    <string name="geo_unavailable">Жайгашкан жер жеткиликсиз</string>
+
+    <string name="share_text">Кыргызстандын кубаттоо станцияларынын картасы: кайсы порттор бош экени көрүнөт.</string>
+
+    <string name="banner_offline">Байланыш жок — акыркы жүктөлгөн карта көрсөтүлдү. Даректер, коннекторлор жана баалар туура, бирок азыр канча порт бош экени белгисиз.</string>
+    <string name="banner_stale">%1$d станциянын маалыматы эскирген — тармак жооп бербейт. Алар боз түстө: даректери менен баалары туура, бош порттордун саны белгисиз.</string>
+    <string name="banner_error">Маалыматтарды жаңылоо мүмкүн болгон жок: %1$s</string>
+    <string name="banner_error_cached">Маалыматтарды жаңылоо мүмкүн болгон жок: %1$s. Акыркы жүктөлгөнү көрсөтүлдү.</string>
+
+    <string name="about_title">Колдонмо жөнүндө</string>
+    <string name="about_intro">Кыргызстандын кубаттоо станцияларынын картасы. Бош станцияга бекер барбаш үчүн, азыр кайсы порттор бош экенин көрсөтөт.</string>
+    <string name="about_source_h">Маалымат кайдан</string>
+    <string name="about_source1">Төрт тармактын колдонмолорунан: SPARK, We way, EVION жана Charge24. Колдонмо алар менен байланышы жок жана эч нерсе сатпайт — алардын карталарын бир жерге чогултат.</string>
+    <string name="about_source2">Бош-эместиги беш мүнөттө бир жаңыланат. Жаңылоолордун ортосунда сүрөт артта калышы мүмкүн: бир мүнөт мурун ээленген станция дагы эле бош болуп көрүнөт.</string>
+    <string name="about_pin_h">Станциянын белгиси</string>
+    <string name="about_pin1">Шакек порттордун санына бөлүнгөн: жашыл — бош, кызыл — ээленген, боз — тармакта жок. Ортосунда — бардык порттордун саны.</string>
+    <string name="about_pin2">Эгер тармак жооп бербей калса, шакек толугу менен боз болот: эскирген маалыматты чыныгыдай көрсөтүү адашууга алып келмек.</string>
+    <string name="about_price_h">Баалар</string>
+    <string name="about_price">Тармактар кандай берсе, ошондой көрсөтүлөт. Күндүн убагы боюнча арзандатуулар бул маалыматта чагылдырылган эмес — тармактын колдонмосунан текшериңиз.</string>
+    <string name="about_version">Версия %1$s</string>
+    <string name="about_repo">Баштапкы коду жана релиздер</string>
+
+    <string name="settings_title">Жөндөөлөр</string>
+    <string name="settings_language">Тил</string>
+    <string name="settings_theme">Тема</string>
+    <string name="theme_system">Системадагыдай</string>
+    <string name="theme_light">Жарык</string>
+    <string name="theme_dark">Караңгы</string>
+    <string name="settings_dynamic_color">Тушкагаздан алынган түстөр</string>
+    <string name="settings_dynamic_color_hint">Палитраны түзмөктүн системалык темасына ылайыктайт.</string>
+
+    <string name="update_section">Жаңылоо</string>
+    <string name="update_auto_check">Иштетүүдө жаңылоону текшерүү</string>
+    <string name="update_check_now">Жаңылоону текшерүү</string>
+    <string name="update_checking">Текшерилүүдө…</string>
+    <string name="update_up_to_date">Акыркы версия орнотулган</string>
+    <string name="update_available">%1$s версиясы жеткиликтүү</string>
+    <string name="update_size">Жүктөө көлөмү: %1$s</string>
+    <string name="update_install">Орнотуу</string>
+    <string name="update_later">Кийинчерээк</string>
+    <string name="update_downloading_start">Жүктөө башталды…</string>
+    <string name="update_downloading_progress">Жүктөлүүдө: %1$d%%</string>
+    <string name="update_downloading_paused">Жүктөө токтотулду</string>
+    <string name="update_downloading_done">Жүктөө аяктады</string>
+    <string name="update_download_notification">ChargeKG жаңылоосу</string>
+    <string name="update_download_error">Жүктөө катасы (код %1$d)</string>
+    <string name="update_error_http">GitHub API: HTTP %1$d</string>
+    <string name="update_error_empty">GitHub бош жооп кайтарды</string>
+    <string name="update_error_no_tag">GitHub жообунда tag_name жок</string>
+    <string name="update_error_no_apk">%1$s релизинде APK жок</string>
+    <string name="update_needs_permission">Бул булактан орнотууга уруксат бериңиз</string>
+    <string name="update_needs_permission_hint">Колдонмо өз жаңылоосун орнотушу үчүн Android ачык уруксат талап кылат.</string>
+    <string name="update_open_permission">Жөндөөлөрдү ачуу</string>
+</resources>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_tagline">EV charging stations in Kyrgyzstan</string>
+
+    <string name="btn_locate">Show my location</string>
+    <string name="btn_about">About</string>
+    <string name="btn_filters">Filters</string>
+    <string name="btn_share">Share</string>
+    <string name="btn_list">Station list</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_lang">Language</string>
+    <string name="btn_reset">Reset</string>
+    <string name="btn_done">Done</string>
+    <string name="btn_ok">Got it</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_settings">Settings</string>
+    <string name="btn_retry">Retry</string>
+    <string name="btn_refresh">Refresh data</string>
+    <string name="btn_copy">Copy coordinates</string>
+
+    <string name="list_head">Nearest</string>
+    <string name="list_loading">Loading…</string>
+    <string name="list_no_match">Nothing matches your filters. Try relaxing them.</string>
+    <string name="list_empty">No stations.</string>
+
+    <string name="filters_title">Filters</string>
+    <string name="filters_company">Network</string>
+    <string name="filters_type">Connector type</string>
+    <string name="filters_power">Charging speed</string>
+    <string name="filters_only_free">Free ports only</string>
+    <string name="filters_nav">Navigation app</string>
+    <string name="filters_nav_hint">If the app is not installed, the web version of the maps opens instead.</string>
+    <string name="filters_all">All</string>
+
+    <string name="power_all">All</string>
+    <string name="power_slow">Slow</string>
+    <string name="power_fast">Fast</string>
+    <string name="power_ultra">Ultra-fast</string>
+
+    <string name="nav_auto">Automatic</string>
+    <string name="nav_dgis">2GIS</string>
+    <string name="nav_ynavi">Yandex Navigator</string>
+    <string name="nav_ymaps">Yandex Maps</string>
+    <string name="nav_gmaps">Google Maps</string>
+    <string name="nav_ask">Ask the system</string>
+
+    <string name="type_other">other</string>
+
+    <string name="unit_m">m</string>
+    <string name="unit_km">km</string>
+    <string name="unit_kw">kW</string>
+    <string name="unit_som">som</string>
+    <string name="unit_min">min</string>
+    <string name="unit_hour">h</string>
+    <string name="time_under_minute">under a minute</string>
+    <string name="dist_straight">%1$s as the crow flies</string>
+
+    <string name="station_price_unknown">price not listed</string>
+    <string name="station_unknown_busy">availability unknown</string>
+    <string name="station_free_of">%1$d of %2$d</string>
+    <string name="station_free">%1$d free</string>
+    <string name="station_route">Get directions</string>
+    <string name="station_app">Network app</string>
+    <string name="station_open_app">Open the %1$s app</string>
+    <string name="station_merged">Site with %1$d stations</string>
+    <string name="station_not_found">Station not found</string>
+    <string name="station_copied">Coordinates copied</string>
+    <string name="station_no_app">The app is not installed</string>
+    <string name="station_no_nav">No app found to show the route</string>
+
+    <string name="counts_unknown">%1$d stations · availability unknown</string>
+    <string name="counts_known">%1$d stations · %2$d of %3$d ports free</string>
+
+    <string name="geo_from_me">from your location</string>
+    <string name="geo_map_center">from the map centre</string>
+    <string name="geo_denied">Location access not granted — measuring from the map centre</string>
+    <string name="geo_unavailable">Location unavailable</string>
+
+    <string name="share_text">Map of EV charging stations in Kyrgyzstan: see which ports are free.</string>
+
+    <string name="banner_offline">No connection — showing the last loaded map. Addresses, connectors and prices are correct, but how many ports are free right now is unknown.</string>
+    <string name="banner_stale">%1$d stations have stale availability — their network is not responding. They are shown in grey: addresses and prices are correct, the number of free ports is unknown.</string>
+    <string name="banner_error">Could not refresh the data: %1$s</string>
+    <string name="banner_error_cached">Could not refresh the data: %1$s. Showing the last loaded copy.</string>
+
+    <string name="about_title">About</string>
+    <string name="about_intro">A map of EV charging stations in Kyrgyzstan. It shows which ports are free right now, so you do not drive to an occupied charger.</string>
+    <string name="about_source_h">Where the data comes from</string>
+    <string name="about_source1">From the apps of four networks: SPARK, We way, EVION and Charge24. This app is not affiliated with them and sells nothing — it only gathers their maps into one.</string>
+    <string name="about_source2">Availability is refreshed every five minutes. Between refreshes the picture can lag: a charger taken a minute ago is still shown as free.</string>
+    <string name="about_pin_h">The station marker</string>
+    <string name="about_pin1">The ring is split by the number of ports: green — free, red — busy, grey — offline. The centre shows the total number of ports.</string>
+    <string name="about_pin2">If a network stops responding, the ring turns entirely grey: showing stale availability as current would be misleading.</string>
+    <string name="about_price_h">Prices</string>
+    <string name="about_price">Shown exactly as the networks report them. Time-of-day discounts are not part of that data — check the network\'s own app.</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_repo">Source code and releases</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">Follow the system</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="settings_dynamic_color">Colours from wallpaper</string>
+    <string name="settings_dynamic_color_hint">Matches the palette to your device theme.</string>
+
+    <string name="update_section">Update</string>
+    <string name="update_auto_check">Check for updates on launch</string>
+    <string name="update_check_now">Check for updates</string>
+    <string name="update_checking">Checking…</string>
+    <string name="update_up_to_date">You are on the latest version</string>
+    <string name="update_available">Version %1$s is available</string>
+    <string name="update_size">Download size: %1$s</string>
+    <string name="update_install">Install</string>
+    <string name="update_later">Later</string>
+    <string name="update_downloading_start">Starting the download…</string>
+    <string name="update_downloading_progress">Downloading: %1$d%%</string>
+    <string name="update_downloading_paused">Download paused</string>
+    <string name="update_downloading_done">Download finished</string>
+    <string name="update_download_notification">ChargeKG update</string>
+    <string name="update_download_error">Download failed (code %1$d)</string>
+    <string name="update_error_http">GitHub API: HTTP %1$d</string>
+    <string name="update_error_empty">Empty response from GitHub</string>
+    <string name="update_error_no_tag">No tag_name in the GitHub response</string>
+    <string name="update_error_no_apk">Release %1$s has no APK</string>
+    <string name="update_needs_permission">Allow installing from this source</string>
+    <string name="update_needs_permission_hint">Android requires explicit permission before the app can install its own update.</string>
+    <string name="update_open_permission">Open settings</string>
+</resources>

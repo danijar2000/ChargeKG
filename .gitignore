@@ -1,0 +1,12 @@
+# Ведущий слэш обязателен: правило без него ловит любой уровень вложенности
+# и может незаметно исключить каталог исходников с таким же именем.
+/build
+/app/build
+/.gradle
+/local.properties
+/keystore.properties
+*.keystore
+*.jks
+.idea/
+.DS_Store
+/captures
