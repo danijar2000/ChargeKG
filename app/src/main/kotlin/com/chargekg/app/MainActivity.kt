@@ -1,19 +1,29 @@
 package com.chargekg.app
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chargekg.app.ui.AppRoot
 import com.chargekg.app.ui.ChargeKgTheme
 import com.chargekg.app.ui.MainViewModel
 import com.chargekg.app.ui.configureOsmdroid
+import com.chargekg.app.util.withLocale
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
+
+    // Локаль подменяется до создания ресурсов активности: только так выбранный
+    // язык побеждает язык телефона. Смена языка в настройках вызывает
+    // recreate(), и подмена срабатывает заново.
+    override fun attachBaseContext(newBase: Context) {
+        val app = newBase.applicationContext as ChargeKgApp
+        super.attachBaseContext(newBase.withLocale(app.language()))
+    }
 
     private val viewModel: MainViewModel by viewModels()
 

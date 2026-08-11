@@ -134,15 +134,13 @@ dependencies {
     implementation(libs.lifecycle.runtime.compose)
     debugImplementation(libs.compose.ui.tooling)
 
-    // Нужен только ради AppCompatDelegate.setApplicationLocales (per-app language).
-    implementation(libs.appcompat)
-
     implementation(libs.coroutines.android)
     implementation(libs.okhttp)
     implementation(libs.osmdroid)
 
     // Намеренно НЕ подключены: Hilt, Room, Retrofit, kotlinx-serialization,
-    // DataStore, WorkManager, play-services-*, material-icons-extended.
+    // DataStore, WorkManager, play-services-*, material-icons-extended,
+    // appcompat (язык переключается подменой конфигурации — см. util/Locales.kt).
     // Причины — в плане проекта: каждая из них стоит сотни килобайт при
     // нулевой пользе на шести экранах и одном кэшируемом ответе.
 

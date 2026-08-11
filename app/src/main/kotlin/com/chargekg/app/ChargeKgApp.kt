@@ -2,13 +2,12 @@ package com.chargekg.app
 
 import android.app.Application
 import android.content.Context
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import com.chargekg.app.data.ChargeApi
 import com.chargekg.app.data.Settings
 import com.chargekg.app.data.StationCache
 import com.chargekg.app.data.StationRepository
 import com.chargekg.app.update.UpdateChecker
+import com.chargekg.app.util.withLocale
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
@@ -46,20 +45,17 @@ class ChargeKgApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
-        applySavedLanguage()
+        // Locale.setDefault внутри withLocale задаёт язык и для строк, которые
+        // берутся вне активности.
+        withLocale(language())
     }
 
-    /**
-     * Язык интерфейса берётся ТОЛЬКО из настроек приложения; системная локаль
-     * намеренно не учитывается. В Кыргызстане английский язык телефона сплошь
-     * и рядом стоит у тех, кто читает по-русски. Пока выбор не сделан,
-     * работает язык по умолчанию — русский.
-     */
-    private fun applySavedLanguage() {
-        val tag = container.settings.current.language
-        if (tag.isNotEmpty()) {
-            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
-        }
+    /** Выбранный язык или русский по умолчанию — как и на сайте. */
+    fun language(): String = container.settings.current.language.ifEmpty { DEFAULT_LANGUAGE }
+
+    companion object {
+        /** Тот же язык по умолчанию, что и на сайте. */
+        const val DEFAULT_LANGUAGE = "ru"
     }
 }
 

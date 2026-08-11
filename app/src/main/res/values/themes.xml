@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Вся тема живёт в Compose (ui/Theme.kt). XML-тема нужна только чтобы
-         окно не мигало белым до первого кадра и чтобы работал AppCompatDelegate
-         с per-app language. -->
-    <style name="Theme.ChargeKG" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <!-- Вся тема живёт в Compose (ui/Theme.kt). XML-тема нужна только чтобы окно
+         не мигало белым до первого кадра. Родитель платформенный, а не
+         Theme.AppCompat: appcompat в зависимостях нет. -->
+    <style name="Theme.ChargeKG" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/window_background</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>

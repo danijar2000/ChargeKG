@@ -2,8 +2,6 @@ package com.chargekg.app.ui
 
 import android.app.Application
 import android.location.Location
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.chargekg.app.container
@@ -75,14 +73,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setDynamicColor(enabled: Boolean) = container.settings.setDynamicColor(enabled)
 
-    /**
-     * Язык применяется сразу через per-app language. Системная локаль при этом
-     * не учитывается никогда: выбор языка — за человеком.
-     */
-    fun setLanguage(tag: String) {
-        container.settings.setLanguage(tag)
-        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
-    }
+    /** Сохраняет выбор; применяет его пересозданием активности. */
+    fun setLanguage(tag: String) = container.settings.setLanguage(tag)
 
     /** Станции, прошедшие фильтр. Та же функция используется для запроса списка. */
     fun visible(state: StationsState, filters: Filters): List<Station> =

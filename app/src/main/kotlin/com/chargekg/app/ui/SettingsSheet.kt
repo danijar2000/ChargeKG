@@ -28,10 +28,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.chargekg.app.R
+import com.chargekg.app.ChargeKgApp
 import com.chargekg.app.container
 import com.chargekg.app.data.Prefs
 import com.chargekg.app.data.ThemeMode
@@ -67,10 +69,15 @@ fun SettingsSheet(
             Text(stringResource(R.string.settings_language), style = MaterialTheme.typography.titleSmall)
             FlowRow {
                 for ((tag, title) in LANGUAGES) {
-                    val selected = prefs.language.ifEmpty { "ru" } == tag
+                    val selected = prefs.language.ifEmpty { ChargeKgApp.DEFAULT_LANGUAGE } == tag
                     FilterChip(
                         selected = selected,
-                        onClick = { viewModel.setLanguage(tag) },
+                        onClick = {
+                            viewModel.setLanguage(tag)
+                            // Локаль подменяется в attachBaseContext, поэтому
+                            // новый язык подхватывается пересозданием активности.
+                            (context as? ComponentActivity)?.recreate()
+                        },
                         label = { Text(title) },
                         modifier = Modifier.padding(end = 8.dp),
                     )
