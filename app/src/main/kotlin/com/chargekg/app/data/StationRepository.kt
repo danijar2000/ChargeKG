@@ -116,6 +116,13 @@ class StationRepository(
 
     private suspend fun fetchStatus() {
         val statuses = when (val fetch = api.status(cache.statusEtag)) {
+            is StatusFetch.Unsupported -> {
+                // Сервер старее приложения: маршрута ещё нет. Молча берём
+                // полный список — человеку об этом знать незачем.
+                fetchFull()
+                return
+            }
+
             is StatusFetch.NotModified -> {
                 // Сервер подтвердил тот же слепок занятости, значит лежащий
                 // рядом файл — сегодняшний. Без него показанное осталось бы с

@@ -18,6 +18,13 @@ sealed interface StationsFetch {
 sealed interface StatusFetch {
     data class Fresh(val body: String, val etag: String?) : StatusFetch
     data object NotModified : StatusFetch
+
+    /**
+     * Сервер не знает такого маршрута. Приложение обновляется само и может
+     * оказаться новее сервера — тогда оно просто возвращается к полному
+     * списку, а не показывает человеку ошибку.
+     */
+    data object Unsupported : StatusFetch
 }
 
 class ApiException(message: String) : IOException(message)
@@ -68,6 +75,7 @@ class ChargeApi(
         client.newCall(builder.build()).execute().use { response ->
             when {
                 response.code == 304 -> StatusFetch.NotModified
+                response.code == 404 -> StatusFetch.Unsupported
                 response.isSuccessful -> StatusFetch.Fresh(
                     body = response.body?.string().orEmpty(),
                     etag = response.header("ETag"),

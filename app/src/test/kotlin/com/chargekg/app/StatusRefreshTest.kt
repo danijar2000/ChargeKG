@@ -156,6 +156,22 @@ class StatusRefreshTest {
     }
 
     @Test
+    fun `сервер без слепка занятости не ломает обновление`() = runTest {
+        server.enqueue(MockResponse().setBody(full(2, 3)).setHeader("ETag", "\"full\""))
+        repo.refresh()
+
+        // Приложение обновляется само и может оказаться новее сервера. Ошибку
+        // за это показывать не за что — просто берём полный список.
+        server.enqueue(MockResponse().setResponseCode(404))
+        server.enqueue(MockResponse().setBody(full(1, 3)).setHeader("ETag", "\"full2\""))
+        repo.refresh()
+
+        assertEquals(listOf("/v1/stations", "/v1/status", "/v1/stations"), paths(3))
+        assertNull(repo.state.value.error)
+        assertEquals(1, repo.state.value.stations.single().free)
+    }
+
+    @Test
     fun `новый полный список выбрасывает сохранённую занятость`() = runTest {
         server.enqueue(MockResponse().setBody(full(2, 3)).setHeader("ETag", "\"full\""))
         repo.refresh()
