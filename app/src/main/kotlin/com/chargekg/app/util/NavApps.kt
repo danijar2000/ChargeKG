@@ -70,20 +70,64 @@ private fun openWebRoute(context: Context, app: NavApp, la: String, ln: String):
     return startView(context, url, pkg = null)
 }
 
+/** Чем закончилась попытка открыть приложение сети. */
+enum class NetworkAppResult {
+    /** Открылась нужная точка зарядки. */
+    STATION,
+
+    /** Приложение открылось, но на главном экране: ссылки на станцию нет. */
+    APP_ONLY,
+
+    /** Ни приложения, ни магазина — открывать нечего. */
+    FAILED,
+}
+
 /**
- * Открывает приложение зарядной сети. У EVION и We way собственных схем нет
- * вовсе — их приложения запускаются по имени пакета.
+ * Ссылка на конкретную станцию в приложении сети.
+ *
+ * Пока пусто, и это не забывчивость. Разбор манифестов показал: EVION вовсе не
+ * принимает ссылок, у SPARK и Charge24 схемы `spark://` и `charge24://` ловят
+ * любой путь, а у We way путь `/stations/.*` висит на хосте Firebase Dynamic
+ * Links. То есть приложение возьмётся за ссылку, но какой путь оно понимает —
+ * из манифеста не видно, а код у всех четырёх скомпилирован (Hermes и Flutter),
+ * и строки маршрутов оттуда не достать.
+ *
+ * Значения сюда попадают только проверенными на живом устройстве: правило
+ * «схемы не выдумывать» этот проект уже спасало. До тех пор кнопка честно
+ * говорит, что открыла лишь приложение.
  */
-fun openNetworkApp(context: Context, network: Network): Boolean {
+private fun stationUrl(network: Network, nativeId: String): String? = null
+
+/**
+ * Открывает приложение зарядной сети — по возможности сразу на нужной точке.
+ *
+ * У EVION и We way собственных browsable-схем нет вовсе, их приложения
+ * запускаются по имени пакета.
+ */
+fun openNetworkApp(context: Context, station: Station): NetworkAppResult {
+    val network = station.network ?: return NetworkAppResult.FAILED
+
+    // Родной идентификатор станции в системе сети: наш ключ устроен как
+    // «сеть:родной_id».
+    val nativeId = station.id.substringAfter(':', "")
+    if (nativeId.isNotEmpty()) {
+        stationUrl(network, nativeId)?.let { url ->
+            if (startView(context, url, network.pkg)) return NetworkAppResult.STATION
+        }
+    }
+
     if (network.scheme != null && startView(context, "${network.scheme}://open", network.pkg)) {
-        return true
+        return NetworkAppResult.APP_ONLY
     }
     val launch = context.packageManager.getLaunchIntentForPackage(network.pkg)
     if (launch != null) {
         launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        return runCatching { context.startActivity(launch) }.isSuccess
+        if (runCatching { context.startActivity(launch) }.isSuccess) {
+            return NetworkAppResult.APP_ONLY
+        }
     }
-    return startView(context, "https://play.google.com/store/apps/details?id=${network.pkg}", null)
+    val store = "https://play.google.com/store/apps/details?id=${network.pkg}"
+    return if (startView(context, store, null)) NetworkAppResult.APP_ONLY else NetworkAppResult.FAILED
 }
 
 private fun startView(context: Context, uri: String, pkg: String?): Boolean {

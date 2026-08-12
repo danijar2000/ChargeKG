@@ -67,6 +67,7 @@
     <string name="station_merged">Site with %1$d stations</string>
     <string name="station_not_found">Station not found</string>
     <string name="station_copied">Coordinates copied</string>
+    <string name="station_app_no_link">This network cannot open a station directly — its main screen opened instead</string>
     <string name="station_no_app">The app is not installed</string>
     <string name="station_no_nav">No app found to show the route</string>
 

@@ -70,6 +70,7 @@
     <string name="station_merged">Площадка из %1$d станций</string>
     <string name="station_not_found">Станция не найдена</string>
     <string name="station_copied">Координаты скопированы</string>
+    <string name="station_app_no_link">Эта сеть не умеет открывать станцию напрямую — открыт главный экран приложения</string>
     <string name="station_no_app">Приложение не установлено</string>
     <string name="station_no_nav">Не найдено приложение для маршрута</string>
 

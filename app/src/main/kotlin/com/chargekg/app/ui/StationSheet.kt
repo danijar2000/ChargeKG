@@ -41,6 +41,7 @@ import com.chargekg.app.util.NavApp
 import com.chargekg.app.util.formatDistance
 import com.chargekg.app.util.formatDuration
 import com.chargekg.app.util.formatPower
+import com.chargekg.app.util.NetworkAppResult
 import com.chargekg.app.util.openNetworkApp
 import com.chargekg.app.util.openRoute
 import java.util.Locale
@@ -146,11 +147,19 @@ fun StationSheet(station: Station, nav: NavApp, onDismiss: () -> Unit) {
 
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                station.network?.let { network ->
+                station.network?.let {
                     OutlinedButton(
                         onClick = {
-                            if (!openNetworkApp(context, network)) {
-                                Toast.makeText(context, R.string.station_no_app, Toast.LENGTH_SHORT).show()
+                            // Человек ждёт, что попадёт на свою точку. Если сеть
+                            // так не умеет, об этом надо сказать, а не оставлять
+                            // его искать станцию глазами на чужой карте.
+                            val message = when (openNetworkApp(context, station)) {
+                                NetworkAppResult.STATION -> null
+                                NetworkAppResult.APP_ONLY -> R.string.station_app_no_link
+                                NetworkAppResult.FAILED -> R.string.station_no_app
+                            }
+                            message?.let {
+                                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
                             }
                         },
                         modifier = Modifier.weight(1f),

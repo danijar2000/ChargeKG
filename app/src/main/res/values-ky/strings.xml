@@ -68,6 +68,7 @@
     <string name="station_merged">%1$d станциядан турган аянтча</string>
     <string name="station_not_found">Станция табылган жок</string>
     <string name="station_copied">Координаталар көчүрүлдү</string>
+    <string name="station_app_no_link">Бул тармак станцияны түз ачканды билбейт — колдонмонун башкы экраны ачылды</string>
     <string name="station_no_app">Колдонмо орнотулган эмес</string>
     <string name="station_no_nav">Маршрут үчүн колдонмо табылган жок</string>
 
