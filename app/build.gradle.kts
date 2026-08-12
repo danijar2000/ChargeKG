@@ -44,6 +44,13 @@ android {
                 storePassword = keystoreProps.getProperty("storePassword")
                 keyAlias = keystoreProps.getProperty("keyAlias")
                 keyPassword = keystoreProps.getProperty("keyPassword")
+
+                // v1 не нужен: minSdk 26 понимает v2. v3 включаем явно — только
+                // он позволяет однажды сменить ключ подписи, не заставляя всех
+                // сносить приложение и терять настройки.
+                enableV1Signing = false
+                enableV2Signing = true
+                enableV3Signing = true
             }
         }
     }
