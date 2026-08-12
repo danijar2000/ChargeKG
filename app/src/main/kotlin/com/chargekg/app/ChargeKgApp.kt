@@ -10,6 +10,7 @@ import com.chargekg.app.data.StationRepository
 import com.chargekg.app.update.UpdateChecker
 import com.chargekg.app.util.withLocale
 import okhttp3.OkHttpClient
+import okhttp3.brotli.BrotliInterceptor
 import java.util.concurrent.TimeUnit
 
 /**
@@ -27,6 +28,10 @@ class AppContainer(context: Context) {
             // ошибку, чем держать человека на пустом экране полминуты.
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
+            // Сам OkHttp просит только gzip. Cloudflare перед API умеет brotli,
+            // и он ощутимо плотнее на JSON — перехватчик добавляет заголовок и
+            // распаковывает ответ.
+            .addInterceptor(BrotliInterceptor)
             // Свой кэш ответов не нужен: слепок станций мы храним файлом сами,
             // а условные запросы делаем через собственный ETag.
             .build()

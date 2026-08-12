@@ -91,7 +91,27 @@ data class Station(
     /** Копия с заведомо неизвестной занятостью — для отдачи из кэша без сети. */
     fun withUnknownBusy(): Station =
         copy(free = null, busy = null, offline = null, statusStale = true)
+
+    /** Наложить свежую занятость, оставив справочные поля нетронутыми. */
+    fun withStatus(s: StationStatus): Station =
+        copy(free = s.free, busy = s.busy, offline = s.offline, statusStale = s.statusStale)
 }
+
+/**
+ * Занятость одной станции из `/v1/status`.
+ *
+ * free/busy/offline остаются обнуляемыми: null означает «неизвестно», а не
+ * «нет свободных». total здесь — признак расхождения: изменился, значит у
+ * станции поменялся состав портов и пора за полным списком.
+ */
+data class StationStatus(
+    val id: String,
+    val free: Int?,
+    val busy: Int?,
+    val offline: Int?,
+    val total: Int,
+    val statusStale: Boolean,
+)
 
 data class StationsSnapshot(
     val generatedAt: String,
@@ -185,6 +205,21 @@ fun parseStations(body: String): StationsSnapshot {
         generatedAt = root.optString("generated_at"),
         stations = (0 until arr.length()).map { parseStation(arr.getJSONObject(it)) },
     )
+}
+
+fun parseStatus(body: String): List<StationStatus> {
+    val arr = JSONObject(body).optJSONArray("stations") ?: JSONArray()
+    return (0 until arr.length()).map {
+        val o = arr.getJSONObject(it)
+        StationStatus(
+            id = o.optString("id"),
+            free = o.optIntOrNull("free"),
+            busy = o.optIntOrNull("busy"),
+            offline = o.optIntOrNull("offline"),
+            total = o.optInt("total"),
+            statusStale = o.optBoolean("status_stale"),
+        )
+    }
 }
 
 fun parseNearest(body: String): NearestResult {

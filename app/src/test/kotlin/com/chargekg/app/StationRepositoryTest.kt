@@ -74,10 +74,15 @@ class StationRepositoryTest {
         repo.loadFromCache()
         assertNull(repo.state.value.stations.single().free)
 
+        // Кэша занятости нет — она появится только после первого удачного
+        // /v1/status, — поэтому запрос уходит туда, а оттуда падает на полный
+        // список. Сервер подтверждает слепок, и занятость перечитывается.
+        server.enqueue(MockResponse().setResponseCode(304))
         server.enqueue(MockResponse().setResponseCode(304))
         repo.refresh()
 
-        // Сервер подтвердил слепок — значит занятость в кэше актуальна.
+        assertEquals("/v1/status", server.takeRequest().path)
+        assertEquals("/v1/stations", server.takeRequest().path)
         // Без перечитывания на экране осталась бы копия с обнулёнными счётчиками.
         assertEquals(2, repo.state.value.stations.single().free)
         assertEquals(DataOrigin.NETWORK, repo.state.value.origin)

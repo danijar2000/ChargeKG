@@ -15,6 +15,11 @@ sealed interface StationsFetch {
     data object NotModified : StationsFetch
 }
 
+sealed interface StatusFetch {
+    data class Fresh(val body: String, val etag: String?) : StatusFetch
+    data object NotModified : StatusFetch
+}
+
 class ApiException(message: String) : IOException(message)
 
 /**
@@ -43,6 +48,27 @@ class ChargeApi(
             when {
                 response.code == 304 -> StationsFetch.NotModified
                 response.isSuccessful -> StationsFetch.Fresh(
+                    body = response.body?.string().orEmpty(),
+                    etag = response.header("ETag"),
+                )
+                else -> throw ApiException(errorText(response.code, response.body?.string()))
+            }
+        }
+    }
+
+    /**
+     * Только занятость: между циклами синхронизации меняется лишь она, а весит
+     * ответ в восемь с лишним раз меньше полного списка.
+     */
+    suspend fun status(etag: String?): StatusFetch = withContext(Dispatchers.IO) {
+        val url = baseUrl.newBuilder().addPathSegments("v1/status").build()
+        val builder = Request.Builder().url(url)
+        if (!etag.isNullOrEmpty()) builder.header("If-None-Match", etag)
+
+        client.newCall(builder.build()).execute().use { response ->
+            when {
+                response.code == 304 -> StatusFetch.NotModified
+                response.isSuccessful -> StatusFetch.Fresh(
                     body = response.body?.string().orEmpty(),
                     etag = response.header("ETag"),
                 )

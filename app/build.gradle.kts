@@ -143,6 +143,10 @@ dependencies {
 
     implementation(libs.coroutines.android)
     implementation(libs.okhttp)
+    // Cloudflare перед API уже отдаёт brotli, а OkHttp сам его не умеет: с ним
+    // полный список приезжает 39 КБ вместо 53. Плата — вес библиотеки в APK,
+    // см. замер в README.
+    implementation(libs.okhttp.brotli)
     implementation(libs.osmdroid)
 
     // Намеренно НЕ подключены: Hilt, Room, Retrofit, kotlinx-serialization,
