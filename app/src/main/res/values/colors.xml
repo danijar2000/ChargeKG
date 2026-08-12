@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="window_background">#FFFBFE</color>
-    <color name="ic_launcher_background">#2F6FED</color>
+    <!-- Совпадает с тёмным краем фона иконки: если система где-то покажет
+         плоскую подложку, она не будет резать глаз синим. -->
+    <color name="ic_launcher_background">#05070A</color>
 </resources>

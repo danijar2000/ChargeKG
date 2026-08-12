@@ -2,6 +2,7 @@ package com.chargekg.app
 
 import android.app.Application
 import android.content.Context
+import android.content.res.Resources
 import com.chargekg.app.data.ChargeApi
 import com.chargekg.app.data.Settings
 import com.chargekg.app.data.StationCache
@@ -50,12 +51,32 @@ class ChargeKgApp : Application() {
         withLocale(language())
     }
 
-    /** Выбранный язык или русский по умолчанию — как и на сайте. */
-    fun language(): String = container.settings.current.language.ifEmpty { DEFAULT_LANGUAGE }
+    /**
+     * Выбор человека, если он сделан; иначе язык телефона, если приложение его
+     * знает; иначе английский.
+     *
+     * Английский запасным выбран сознательно: незнакомая локаль — это чаще
+     * всего приезжий, которому русский или кыргызский не помогут.
+     */
+    fun language(): String = container.settings.current.language.ifEmpty { systemLanguage() }
 
     companion object {
-        /** Тот же язык по умолчанию, что и на сайте. */
-        const val DEFAULT_LANGUAGE = "ru"
+        val SUPPORTED = listOf("ru", "ky", "en")
+
+        /** Язык, на котором приложение заговорит без всяких настроек. */
+        const val FALLBACK_LANGUAGE = "en"
+
+        /**
+         * Системная локаль читается из ресурсов конфигурации, а не из
+         * Locale.getDefault(): withLocale() подменяет её при запуске, и на
+         * второй заход getDefault() вернул бы уже наш собственный выбор.
+         */
+        fun systemLanguage(): String = languageOf(
+            Resources.getSystem().configuration.locales[0].language
+        )
+
+        fun languageOf(tag: String): String =
+            SUPPORTED.firstOrNull { it == tag.lowercase() } ?: FALLBACK_LANGUAGE
     }
 }
 

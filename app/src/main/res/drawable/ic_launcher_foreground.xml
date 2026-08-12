@@ -1,15 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Молния в капле — зарядка на карте. Вектор, а не набор PNG: экономит
-     несколько сотен килобайт против пяти растровых плотностей. -->
+<!--
+  Метка с молнией — та же, что на сайте (web/icon.svg), координаты сохранены,
+  viewport 512.
+
+  Свечения нет: VectorDrawable не умеет feGaussianBlur, а тащить готовый PNG
+  на 100 КБ ради него против бюджета размера APK. Вместо ореола у капли чуть
+  более широкий светлый контур — разницу видно только при сравнении вплотную.
+
+  Группа ужата до 0.76: у adaptive icon видна лишь центральная часть, и всё,
+  что не влезло в безопасную зону, обрежет маска устройства.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,26c-10.5,0 -19,8.5 -19,19c0,14.2 19,37 19,37s19,-22.8 19,-37C73,34.5 64.5,26 54,26z" />
-    <path
-        android:fillColor="#2F6FED"
-        android:pathData="M57.5,34l-12,14h7.5l-3,12l12,-14h-7.5z" />
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <group
+        android:pivotX="256"
+        android:pivotY="249"
+        android:scaleX="0.76"
+        android:scaleY="0.76"
+        android:translateY="7">
+
+        <!-- Круг-основание под меткой -->
+        <path
+            android:pathData="M194,424 a62,20 0 1,0 124,0 a62,20 0 1,0 -124,0"
+            android:strokeColor="#7DFF2E"
+            android:strokeAlpha="0.55"
+            android:strokeWidth="6" />
+
+        <!-- Замена ореолу: широкий полупрозрачный контур капли -->
+        <path
+            android:pathData="M256,74 c-79,0 -143,64 -143,143 0,100 143,207 143,207 s143,-107 143,-207 c0,-79 -64,-143 -143,-143 z"
+            android:strokeColor="#B6FF3D"
+            android:strokeAlpha="0.28"
+            android:strokeWidth="16" />
+
+        <path
+            android:pathData="M256,74 c-79,0 -143,64 -143,143 0,100 143,207 143,207 s143,-107 143,-207 c0,-79 -64,-143 -143,-143 z">
+            <aapt:attr xmlns:aapt="http://schemas.android.com/aapt"
+                name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="256" android:startY="74"
+                    android:endX="256" android:endY="424"
+                    android:startColor="#B6FF3D"
+                    android:endColor="#5FD400" />
+            </aapt:attr>
+        </path>
+
+        <path
+            android:pathData="M168,214 a88,88 0 1,0 176,0 a88,88 0 1,0 -176,0"
+            android:fillColor="#07090C" />
+
+        <path
+            android:pathData="M282,146 l-70,96 h40 l-14,74 74,-102 h-42 z"
+            android:fillColor="#C8FF63" />
+    </group>
 </vector>

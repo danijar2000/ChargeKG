@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Для themed icons система красит силуэт своим цветом, поэтому здесь только
+  форма: капля с вырезанной молнией. Цветной вариант не подошёл бы — молния на
+  нём просто исчезла бы, слившись с каплей.
+
+  Вырез сделан правилом чётности (evenOdd): внутренний контур молнии идёт тем
+  же путём, что и в цветной иконке.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <group
+        android:pivotX="256"
+        android:pivotY="249"
+        android:scaleX="0.76"
+        android:scaleY="0.76"
+        android:translateY="7">
+
+        <path
+            android:fillColor="#000000"
+            android:fillType="evenOdd"
+            android:pathData="M256,74 c-79,0 -143,64 -143,143 0,100 143,207 143,207 s143,-107 143,-207 c0,-79 -64,-143 -143,-143 z M282,146 l-70,96 h40 l-14,74 74,-102 h-42 z" />
+    </group>
+</vector>

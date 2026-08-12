@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Фон иконки: тёмная подложка с зелёной сеткой улиц в перспективе — как на
+  сайте (web/icon.svg). Координаты те же, viewport 512, чтобы формы совпадали
+  один в один; adaptive icon сам масштабирует его до 108 dp и обрезает по маске
+  устройства, поэтому сетка намеренно выходит за края.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <path android:pathData="M0,0h512v512h-512z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt"
+            name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="256"
+                android:centerY="195"
+                android:gradientRadius="369"
+                android:startColor="#1B2430"
+                android:endColor="#05070A" />
+        </aapt:attr>
+    </path>
+
+    <!-- Продольные улицы -->
+    <path android:pathData="M-40,372 H552" android:strokeColor="#7DFF2E"
+        android:strokeAlpha="0.30" android:strokeWidth="4" />
+    <path android:pathData="M-40,424 H552" android:strokeColor="#7DFF2E"
+        android:strokeAlpha="0.30" android:strokeWidth="4" />
+    <path android:pathData="M-40,486 H552" android:strokeColor="#7DFF2E"
+        android:strokeAlpha="0.30" android:strokeWidth="4" />
+
+    <!-- Поперечные, расходящиеся к низу -->
+    <path android:pathData="M120,340 L40,512" android:strokeColor="#7DFF2E"
+        android:strokeAlpha="0.30" android:strokeWidth="4" />
+    <path android:pathData="M230,340 L196,512" android:strokeColor="#7DFF2E"
+        android:strokeAlpha="0.30" android:strokeWidth="4" />
+    <path android:pathData="M300,340 L332,512" android:strokeColor="#7DFF2E"
+        android:strokeAlpha="0.30" android:strokeWidth="4" />
+    <path android:pathData="M400,340 L482,512" android:strokeColor="#7DFF2E"
+        android:strokeAlpha="0.30" android:strokeWidth="4" />
+
+    <!-- Две «главные» улицы шире и бледнее — они дают глубину -->
+    <path android:pathData="M-40,424 H552" android:strokeColor="#7DFF2E"
+        android:strokeAlpha="0.12" android:strokeWidth="10" />
+    <path android:pathData="M230,340 L196,512" android:strokeColor="#7DFF2E"
+        android:strokeAlpha="0.12" android:strokeWidth="10" />
+</vector>

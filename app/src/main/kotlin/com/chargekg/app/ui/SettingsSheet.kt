@@ -69,7 +69,9 @@ fun SettingsSheet(
             Text(stringResource(R.string.settings_language), style = MaterialTheme.typography.titleSmall)
             FlowRow {
                 for ((tag, title) in LANGUAGES) {
-                    val selected = prefs.language.ifEmpty { ChargeKgApp.DEFAULT_LANGUAGE } == tag
+                    // Пока выбор не сделан, подсвечивается фактически
+                    // применённый язык, а не «первый в списке».
+                    val selected = prefs.language.ifEmpty { ChargeKgApp.systemLanguage() } == tag
                     FilterChip(
                         selected = selected,
                         onClick = {

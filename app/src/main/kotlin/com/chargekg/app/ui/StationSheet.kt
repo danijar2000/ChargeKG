@@ -209,6 +209,17 @@ private fun ConnectorRow(connector: Connector) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
+        // Значок разъёма — тот же, что на сайте. Для неопознанного типа его
+        // нет, и тогда строка начинается сразу с названия.
+        ConnectorIcons.forType(connector.type)?.let { icon ->
+            Icon(
+                icon,
+                contentDescription = null,
+                modifier = Modifier.size(28.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.size(10.dp))
+        }
         Column(Modifier.weight(1f)) {
             // Когда сервер не смог опознать разъём, показывается исходное
             // название сети: «прочее» без пояснения бесполезно.
