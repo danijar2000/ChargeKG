@@ -23,7 +23,11 @@ import java.io.File
  * способ доставить исправления. Логика перенесена из BYDMate, где она
  * отработана на живых устройствах; отличия отмечены комментариями.
  */
-class UpdateChecker(private val httpClient: OkHttpClient) {
+class UpdateChecker(
+    private val httpClient: OkHttpClient,
+    /** Адрес вынесен параметром только ради тестов: в приложении он один. */
+    private val apiUrl: String = GITHUB_API,
+) {
 
     data class UpdateInfo(
         val version: String,
@@ -47,11 +51,15 @@ class UpdateChecker(private val httpClient: OkHttpClient) {
             prefs.edit().putLong(KEY_LAST_CHECK, now).apply()
 
             val request = Request.Builder()
-                .url(GITHUB_API)
+                .url(apiUrl)
                 .header("Accept", "application/vnd.github+json")
                 .header("User-Agent", "ChargeKG-UpdateCheck")
                 .build()
             val body = httpClient.newCall(request).execute().use { response ->
+                // 404 у releases/latest означает «релизов ещё нет», а не сбой:
+                // так отвечает свежий репозиторий. Показывать человеку
+                // «GitHub API: HTTP 404» здесь не за что — обновлять просто нечего.
+                if (response.code == 404) return@withContext null
                 if (!response.isSuccessful) {
                     throw Exception(context.getString(R.string.update_error_http, response.code))
                 }
@@ -220,7 +228,7 @@ class UpdateChecker(private val httpClient: OkHttpClient) {
     }
 
     companion object {
-        private const val GITHUB_API =
+        const val GITHUB_API =
             "https://api.github.com/repos/danijar2000/ChargeKG/releases/latest"
         private const val PREFS_NAME = "update_prefs"
         private const val KEY_LAST_CHECK = "last_check"

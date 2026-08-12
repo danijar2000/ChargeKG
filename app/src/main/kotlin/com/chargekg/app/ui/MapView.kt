@@ -5,7 +5,10 @@ import android.preference.PreferenceManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -14,7 +17,11 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.chargekg.app.BuildConfig
 import com.chargekg.app.data.Station
+import com.chargekg.app.domain.clusterStations
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.CustomZoomButtonsController
@@ -86,22 +93,47 @@ fun StationMap(
     modifier: Modifier = Modifier,
 ) {
     val resources = LocalContext.current.resources
+    var zoom by remember { mutableDoubleStateOf(mapView.zoomLevelDouble) }
 
-    // Маркеры пересобираются только при смене набора станций или выделения —
-    // не на каждой рекомпозиции: их шесть сотен.
-    LaunchedEffect(stations, selectedId) {
+    // Состав групп зависит только от зума, поэтому слушаем именно его. При
+    // прокрутке пересобирать нечего — и метки не «прыгают» под пальцем.
+    DisposableEffect(mapView) {
+        val listener = object : MapListener {
+            override fun onZoom(event: ZoomEvent?): Boolean {
+                zoom = event?.zoomLevel ?: mapView.zoomLevelDouble
+                return false
+            }
+
+            override fun onScroll(event: ScrollEvent?): Boolean = false
+        }
+        mapView.addMapListener(listener)
+        onDispose { mapView.removeMapListener(listener) }
+    }
+
+    // Метки пересобираются только при смене набора станций, зума или
+    // выделения — не на каждой рекомпозиции: станций больше четырёхсот.
+    LaunchedEffect(stations, selectedId, zoom) {
+        val clusters = clusterStations(stations, zoom, density = resources.displayMetrics.density)
         mapView.overlays.removeAll { it is Marker }
-        for (station in stations) {
+        for (cluster in clusters) {
+            val single = cluster.single
             mapView.overlays.add(
                 Marker(mapView).apply {
-                    position = GeoPoint(station.lat, station.lng)
+                    position = GeoPoint(cluster.lat, cluster.lng)
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                    icon = PinIcons.forStation(resources, station, station.id == selectedId)
+                    icon = PinIcons.forCluster(resources, cluster, cluster.id == selectedId)
                     // Попап osmdroid не используется: карточка станции живёт в
                     // Compose и умеет тему и выбранный язык.
                     infoWindow = null
                     setOnMarkerClickListener { _, _ ->
-                        onSelect(station.id)
+                        if (single != null) {
+                            onSelect(single.id)
+                        } else {
+                            // По группе открывать нечего — приближаем, пока она
+                            // не рассыплется на отдельные станции.
+                            mapView.controller.setZoom(mapView.zoomLevelDouble + 2.0)
+                            mapView.controller.animateTo(GeoPoint(cluster.lat, cluster.lng))
+                        }
                         true
                     }
                 }

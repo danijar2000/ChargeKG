@@ -8,7 +8,7 @@ import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.content.res.Resources
-import com.chargekg.app.data.Station
+import com.chargekg.app.domain.Cluster
 
 /**
  * Метка станции: кольцо, разбитое по числу портов — зелёное свободные,
@@ -25,21 +25,23 @@ object PinIcons {
     private val FREE = Color.rgb(0x16, 0xA3, 0x4A)
     private val BUSY = Color.rgb(0xDC, 0x26, 0x26)
     private val OFF = Color.rgb(0x9C, 0xA3, 0xAF)
+    private val ACCENT = Color.rgb(0x2F, 0x6F, 0xED)
 
     private val cache = HashMap<String, Drawable>()
 
-    fun forStation(resources: Resources, station: Station, selected: Boolean): Drawable {
-        val key = if (station.unknownBusy) {
-            "u:${station.total}:$selected"
+    fun forCluster(resources: Resources, cluster: Cluster, selected: Boolean): Drawable {
+        val count = cluster.stations.size
+        val key = if (cluster.unknownBusy) {
+            "u:$count:${cluster.totalPorts}:$selected"
         } else {
-            "${station.free}:${station.busy}:${station.offline}:${station.total}:$selected"
+            "$count:${cluster.free}:${cluster.busy}:${cluster.totalPorts}:$selected"
         }
-        return cache.getOrPut(key) { draw(resources, station, selected) }
+        return cache.getOrPut(key) { draw(resources, cluster, selected) }
     }
 
     fun clear() = cache.clear()
 
-    private fun draw(resources: Resources, station: Station, selected: Boolean): Drawable {
+    private fun draw(resources: Resources, cluster: Cluster, selected: Boolean): Drawable {
         val density = resources.displayMetrics.density
         val size = (SIZE_DP * density * if (selected) 1.25f else 1f)
         val px = size.toInt().coerceAtLeast(1)
@@ -62,18 +64,22 @@ object PinIcons {
             strokeCap = Paint.Cap.BUTT
         }
 
-        val total = station.total
-        if (station.unknownBusy || total <= 0) {
+        val total = cluster.totalPorts
+        if (cluster.unknownBusy || total <= 0) {
             stroke.color = OFF
             canvas.drawArc(rect, 0f, 360f, false, stroke)
         } else {
             // Сегменты идут от верхней точки по часовой стрелке; между ними
             // оставлен зазор, иначе на трёх портах кольцо читается как сплошное.
-            val gap = if (total > 1) 4f else 0f
+            //
+            // Зазор обязан быть долей шага, а не константой: у группы из
+            // 86 портов шаг равен 4,2°, и фиксированные 4° съедали сегмент
+            // целиком — кольцо пропадало с карты.
             val step = 360f / total
+            val gap = if (total > 1) minOf(4f, step * 0.3f) else 0f
             var angle = -90f
-            val free = (station.free ?: 0).coerceIn(0, total)
-            val busy = (station.busy ?: 0).coerceIn(0, total - free)
+            val free = cluster.free.coerceIn(0, total)
+            val busy = cluster.busy.coerceIn(0, total - free)
             // Остаток кольца всегда серый. Если сумма счётчиков меньше total,
             // непокрашенная дуга выглядела бы как дефект отрисовки.
             val offline = total - free - busy
@@ -95,6 +101,33 @@ object PinIcons {
         }
         val baseline = px / 2f - (text.descent() + text.ascent()) / 2f
         canvas.drawText(total.toString(), px / 2f, baseline, text)
+
+        // В центре всегда число ПОРТОВ — так же, как на сайте. Сколько станций
+        // свёрнуто в метку, показывает отдельный значок в углу: иначе одно
+        // число означало бы то порты, то станции, и метка врала бы.
+        val count = cluster.stations.size
+        if (count > 1) {
+            val badgeR = px * 0.20f
+            val cx = px - badgeR - density
+            val cy = badgeR + density
+            val badge = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.FILL
+                color = ACCENT
+            }
+            canvas.drawCircle(cx, cy, badgeR, badge)
+            val badgeText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+                textAlign = Paint.Align.CENTER
+                textSize = badgeR * 1.25f
+                isFakeBoldText = true
+            }
+            canvas.drawText(
+                count.toString(),
+                cx,
+                cy - (badgeText.descent() + badgeText.ascent()) / 2f,
+                badgeText,
+            )
+        }
 
         return BitmapDrawable(resources, bitmap)
     }
