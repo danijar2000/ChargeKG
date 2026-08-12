@@ -40,6 +40,10 @@ fun formatPower(context: Context, kw: Double): String {
 fun formatBytes(context: Context, bytes: Long): String {
     if (bytes <= 0) return "—"
     val mb = bytes / 1024.0 / 1024.0
-    return if (mb >= 1) localized(context, String.format(Locale.US, "%.1f", mb)) + " MB"
-    else "${bytes / 1024} KB"
+    return if (mb >= 1) {
+        localized(context, String.format(Locale.US, "%.1f", mb)) +
+            " " + context.getString(R.string.unit_mb)
+    } else {
+        "${bytes / 1024} " + context.getString(R.string.unit_kb)
+    }
 }

@@ -51,6 +51,8 @@
     <string name="unit_km">км</string>
     <string name="unit_kw">кВт</string>
     <string name="unit_som">сом</string>
+    <string name="unit_mb">МБ</string>
+    <string name="unit_kb">КБ</string>
     <string name="unit_min">мүн</string>
     <string name="unit_hour">с</string>
     <string name="time_under_minute">бир мүнөттөн аз</string>
@@ -126,6 +128,7 @@
     <string name="update_error_empty">GitHub бош жооп кайтарды</string>
     <string name="update_error_no_tag">GitHub жообунда tag_name жок</string>
     <string name="update_error_no_apk">%1$s релизинде APK жок</string>
+    <string name="update_error_file_missing">Жүктөлгөн файл табылган жок</string>
     <string name="update_needs_permission">Бул булактан орнотууга уруксат бериңиз</string>
     <string name="update_needs_permission_hint">Колдонмо өз жаңылоосун орнотушу үчүн Android ачык уруксат талап кылат.</string>
     <string name="update_open_permission">Жөндөөлөрдү ачуу</string>

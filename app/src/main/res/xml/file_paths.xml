@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <!-- DownloadManager кладёт APK в общие «Загрузки»; отсюда его читает установщик. -->
-    <external-path name="downloads" path="Download/" />
+    <!-- Скачанное обновление лежит в собственном каталоге приложения: в общих
+         «Загрузках» при scoped storage приложение не видит даже свой файл. -->
+    <external-files-path name="updates" path="Download/" />
 </paths>

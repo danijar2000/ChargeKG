@@ -112,18 +112,26 @@ class UpdateChecker(
             context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val fileName = apkName(update.version)
 
-        val destFile = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            fileName,
-        )
+        // Загружаем в СВОЙ каталог, а не в общие «Загрузки». При targetSdk 30+
+        // действует scoped storage: файл в общей папке принадлежит загрузчику,
+        // и приложение его даже не видит — file.exists() возвращает false, а
+        // установщик молча не открывается. Проверено на Android 13.
+        // Побочная польза: APK не засоряет «Загрузки» и уходит вместе с
+        // приложением при удалении.
+        val destFile = File(updatesDir(context), fileName)
         if (destFile.exists()) destFile.delete()
+        // Подчищаем APK от прошлых обновлений: иначе каждая версия оставляла бы
+        // по мегабайту навсегда.
+        updatesDir(context)?.listFiles()
+            ?.filter { it.name.endsWith(".apk") && it.name != fileName }
+            ?.forEach { it.delete() }
 
         // Уведомление о загрузке рисует системный загрузчик от своего имени,
         // поэтому POST_NOTIFICATIONS приложению не нужен.
         val request = DownloadManager.Request(Uri.parse(update.downloadUrl))
             .setTitle("ChargeKG ${update.version}")
             .setDescription(context.getString(R.string.update_download_notification))
-            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+            .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, fileName)
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
 
         val downloadId = downloadManager.enqueue(request)
@@ -200,11 +208,13 @@ class UpdateChecker(
         )
 
     private fun installApk(context: Context, version: String) {
-        val file = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            apkName(version),
-        )
-        if (!file.exists()) return
+        val file = File(updatesDir(context), apkName(version))
+        // Молчаливый выход отсюда однажды уже стоил неработающего обновления:
+        // файл был недоступен из-за scoped storage, а человек видел лишь
+        // закрывшийся диалог. Пусть лучше скажет, что не так.
+        if (!file.exists()) {
+            throw Exception(context.getString(R.string.update_error_file_missing))
+        }
 
         val uri = FileProvider.getUriForFile(
             context,
@@ -220,6 +230,10 @@ class UpdateChecker(
     }
 
     private fun apkName(version: String) = "ChargeKG-v$version.apk"
+
+    /** Свой каталог загрузок: доступен приложению без единого разрешения. */
+    private fun updatesDir(context: Context): File? =
+        context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
 
     private fun appVersion(context: Context): String = try {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "0.0.0"

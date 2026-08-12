@@ -22,8 +22,8 @@ android {
         applicationId = "com.chargekg.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 2
-        versionName = "0.1.1"
+        versionCode = 3
+        versionName = "0.1.2"
 
         // Локали ограничены тремя: остальные переводы androidx только занимают место.
         resourceConfigurations += listOf("ru", "ky", "en")

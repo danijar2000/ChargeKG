@@ -50,6 +50,8 @@
     <string name="unit_km">km</string>
     <string name="unit_kw">kW</string>
     <string name="unit_som">som</string>
+    <string name="unit_mb">MB</string>
+    <string name="unit_kb">KB</string>
     <string name="unit_min">min</string>
     <string name="unit_hour">h</string>
     <string name="time_under_minute">under a minute</string>
@@ -125,6 +127,7 @@
     <string name="update_error_empty">Empty response from GitHub</string>
     <string name="update_error_no_tag">No tag_name in the GitHub response</string>
     <string name="update_error_no_apk">Release %1$s has no APK</string>
+    <string name="update_error_file_missing">The downloaded file is missing</string>
     <string name="update_needs_permission">Allow installing from this source</string>
     <string name="update_needs_permission_hint">Android requires explicit permission before the app can install its own update.</string>
     <string name="update_open_permission">Open settings</string>

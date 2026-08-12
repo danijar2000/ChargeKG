@@ -53,6 +53,8 @@
     <string name="unit_km">км</string>
     <string name="unit_kw">кВт</string>
     <string name="unit_som">сом</string>
+    <string name="unit_mb">МБ</string>
+    <string name="unit_kb">КБ</string>
     <string name="unit_min">мин</string>
     <string name="unit_hour">ч</string>
     <string name="time_under_minute">меньше минуты</string>
@@ -128,6 +130,7 @@
     <string name="update_error_empty">Пустой ответ от GitHub</string>
     <string name="update_error_no_tag">В ответе GitHub нет tag_name</string>
     <string name="update_error_no_apk">В релизе %1$s нет APK</string>
+    <string name="update_error_file_missing">Скачанный файл не найден</string>
     <string name="update_needs_permission">Разрешите установку из этого источника</string>
     <string name="update_needs_permission_hint">Android требует явного разрешения, чтобы приложение могло установить своё обновление.</string>
     <string name="update_open_permission">Открыть настройки</string>
