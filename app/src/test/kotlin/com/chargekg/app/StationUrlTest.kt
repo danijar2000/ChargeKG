@@ -23,10 +23,12 @@ class StationUrlTest {
     @Test
     fun `у остальных сетей ссылки нет`() {
         // Charge24 не открыл карточку ни на одном из десяти перебранных путей,
-        // у We way фильтр только на схеме Firebase Dynamic Links, а у EVION в
-        // манифесте нет ни одного фильтра VIEW.
+        // у We way фильтр только на схеме Firebase Dynamic Links, у EVION в
+        // манифесте нет ни одного фильтра VIEW, а у RedPay все фильтры — на
+        // https-ссылки приглашений и оплаты.
         assertNull(stationUrl(Network.CHARGE24, "1"))
         assertNull(stationUrl(Network.WEWAY, "10"))
         assertNull(stationUrl(Network.EVION, "646c7cf1b24a83a132b62969"))
+        assertNull(stationUrl(Network.REDPAY, "loc-001"))
     }
 }

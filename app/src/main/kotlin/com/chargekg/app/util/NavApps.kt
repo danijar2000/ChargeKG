@@ -98,6 +98,9 @@ enum class NetworkAppResult {
  *    такую ссылку снаружи не собрать, её выдаёт сервис по запросу владельца.
  *  - **EVION** — в манифесте нет ни одного фильтра VIEW, принимать ссылки
  *    приложению просто нечем.
+ *  - **RedPay** — фильтры есть, но все на https-ссылки Firebase Dynamic Links
+ *    (`redpay.page.link/ref-…`) и на хосты Namba: это приглашения и оплата, а
+ *    не карточка станции.
  *
  * Подбирать «логичные» пути наугад нельзя: правило «схемы не выдумывать» этот
  * проект уже спасало. Если сеть однажды заведёт ссылку, её сюда добавят той же
@@ -105,13 +108,13 @@ enum class NetworkAppResult {
  */
 internal fun stationUrl(network: Network, nativeId: String): String? = when (network) {
     Network.SPARK -> "spark://charging-station/$nativeId"
-    Network.CHARGE24, Network.WEWAY, Network.EVION -> null
+    Network.CHARGE24, Network.WEWAY, Network.EVION, Network.REDPAY -> null
 }
 
 /**
  * Открывает приложение зарядной сети — по возможности сразу на нужной точке.
  *
- * У EVION и We way собственных browsable-схем нет вовсе, их приложения
+ * У EVION, We way и RedPay собственных browsable-схем нет вовсе, их приложения
  * запускаются по имени пакета.
  */
 fun openNetworkApp(context: Context, station: Station): NetworkAppResult {

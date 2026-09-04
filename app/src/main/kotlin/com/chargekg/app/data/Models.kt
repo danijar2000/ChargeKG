@@ -12,7 +12,11 @@ enum class Network(val id: String, val title: String, val pkg: String, val schem
     SPARK("spark", "SPARK", "kg.spark.main", "spark"),
     WEWAY("weway", "We way", "tech.weway.app.kg", null),
     EVION("evion", "EVION", "kg.evion.app", null),
-    CHARGE24("charge24", "Charge24", "com.pay24.charge24", "charge24");
+    CHARGE24("charge24", "Charge24", "com.pay24.charge24", "charge24"),
+
+    // Собственной browsable-схемы у RedPay в манифесте нет: только ссылки
+    // https на redpay.page.link и nambaone.app — их снаружи не собрать.
+    REDPAY("redpay", "RedPay", "kg.redpay", null);
 
     companion object {
         fun of(id: String): Network? = entries.firstOrNull { it.id == id }

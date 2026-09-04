@@ -107,7 +107,7 @@ class FiltersTest {
     fun `в запрос уходят включённые значения, а хранятся исключения`() {
         val filters = Filters(networksOff = setOf("weway"), onlyFree = true)
         val query = filters.toQuery()
-        assertEquals("spark,evion,charge24", query["network"])
+        assertEquals("spark,evion,charge24,redpay", query["network"])
         assertEquals("1", query["free"])
     }
 

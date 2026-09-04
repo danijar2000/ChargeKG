@@ -90,7 +90,7 @@
     <string name="about_title">About</string>
     <string name="about_intro">A map of EV charging stations in Kyrgyzstan. It shows which ports are free right now, so you do not drive to an occupied charger.</string>
     <string name="about_source_h">Where the data comes from</string>
-    <string name="about_source1">From the apps of four networks: SPARK, We way, EVION and Charge24. This app is not affiliated with them and sells nothing — it only gathers their maps into one.</string>
+    <string name="about_source1">From the apps of five networks: SPARK, We way, EVION, Charge24 and RedPay. This app is not affiliated with them and sells nothing — it only gathers their maps into one.</string>
     <string name="about_source2">Availability is refreshed every five minutes. Between refreshes the picture can lag: a charger taken a minute ago is still shown as free.</string>
     <string name="about_pin_h">The station marker</string>
     <string name="about_pin1">The ring is split by the number of ports: green — free, red — busy, grey — offline. The centre shows the total number of ports.</string>
