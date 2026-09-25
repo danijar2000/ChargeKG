@@ -1,6 +1,6 @@
 [versions]
-agp = "8.7.3"
-kotlin = "2.1.0"
+agp = "9.4.0"
+kotlin = "2.4.10"
 composeBom = "2024.12.01"
 activityCompose = "1.9.3"
 lifecycle = "2.8.7"
@@ -9,7 +9,7 @@ coroutines = "1.9.0"
 okhttp = "4.12.0"
 osmdroid = "6.1.20"
 junit = "4.13.2"
-robolectric = "4.13"
+robolectric = "4.17"
 androidxTestCore = "1.6.1"
 
 [libraries]

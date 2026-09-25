@@ -12,6 +12,7 @@ import com.chargekg.app.data.StationsState
 import com.chargekg.app.data.ThemeMode
 import com.chargekg.app.domain.Filters
 import com.chargekg.app.util.NavApp
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -94,6 +95,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 val result = container.api.nearest(anchor.lat, anchor.lng, filters)
                 _nearest.value = NearestState.Ready(result)
+            } catch (e: CancellationException) {
+                // Запрос отменён следующим — состояние уже принадлежит тому.
+                // Записать сюда Failed значило бы затереть его «Loading» или
+                // ответ сообщением «StandaloneCoroutine was cancelled».
+                throw e
             } catch (e: Exception) {
                 _nearest.value = NearestState.Failed(
                     e.message?.takeIf { it.isNotBlank() } ?: e::class.java.simpleName

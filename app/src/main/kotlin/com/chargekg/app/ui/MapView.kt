@@ -5,6 +5,7 @@ import android.preference.PreferenceManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.remember
@@ -17,6 +18,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.chargekg.app.BuildConfig
 import com.chargekg.app.data.Station
+import com.chargekg.app.domain.CLUSTER_MAX_ZOOM
+import com.chargekg.app.domain.Cluster
 import com.chargekg.app.domain.clusterStations
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapListener
@@ -110,37 +113,83 @@ fun StationMap(
         onDispose { mapView.removeMapListener(listener) }
     }
 
-    // Метки пересобираются только при смене набора станций, зума или
-    // выделения — не на каждой рекомпозиции: станций больше четырёхсот.
-    LaunchedEffect(stations, selectedId, zoom) {
-        val clusters = clusterStations(stations, zoom, density = resources.displayMetrics.density)
-        mapView.overlays.removeAll { it is Marker }
+    // onZoom приходит на каждом кадре щипка и анимации. Сырой зум в ключе
+    // пересобирал бы все метки и рисовал новые битмапы шестьдесят раз в
+    // секунду. Ступень в пол-уровня: ячейка группы меняется не больше чем в
+    // полтора раза, а пересборка случается раз за ступень.
+    val zoomStep by remember {
+        derivedStateOf {
+            // Округление не должно дотянуть 14,8 до 15 и тем самым выключить
+            // группировку раньше, чем карта до неё доросла.
+            if (zoom >= CLUSTER_MAX_ZOOM) {
+                CLUSTER_MAX_ZOOM
+            } else {
+                minOf(Math.round(zoom * 2) / 2.0, CLUSTER_MAX_ZOOM - 0.5)
+            }
+        }
+    }
+    val clusters = remember(stations, zoomStep) {
+        clusterStations(stations, zoomStep, density = resources.displayMetrics.density)
+    }
+
+    // Метки переиспользуются по идентификатору группы: новый Marker заводится
+    // только для появившейся группы. Смена выделения поэтому стоит двух
+    // иконок из кэша, а не шестисот новых объектов.
+    val markers = remember(mapView) { HashMap<String, Marker>() }
+    LaunchedEffect(clusters, selectedId) {
+        // MapView живёт дольше этой функции. Если карта вернулась в
+        // композицию, на ней остались метки прежнего прохода, о которых
+        // свежая таблица не знает, — без чистки они задвоились бы.
+        if (markers.isEmpty()) mapView.overlays.removeAll { it is Marker }
+        val alive = HashSet<String>(clusters.size * 2)
         for (cluster in clusters) {
-            val single = cluster.single
-            mapView.overlays.add(
+            alive += cluster.id
+            val marker = markers.getOrPut(cluster.id) {
                 Marker(mapView).apply {
-                    position = GeoPoint(cluster.lat, cluster.lng)
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                    icon = PinIcons.forCluster(resources, cluster, cluster.id == selectedId)
                     // Попап osmdroid не используется: карточка станции живёт в
                     // Compose и умеет тему и выбранный язык.
                     infoWindow = null
-                    setOnMarkerClickListener { _, _ ->
-                        if (single != null) {
-                            onSelect(single.id)
-                        } else {
-                            // По группе открывать нечего — приближаем, пока она
-                            // не рассыплется на отдельные станции.
-                            mapView.controller.setZoom(mapView.zoomLevelDouble + 2.0)
-                            mapView.controller.animateTo(GeoPoint(cluster.lat, cluster.lng))
-                        }
-                        true
-                    }
+                    mapView.overlays.add(this)
                 }
-            )
+            }
+            bind(marker, mapView, cluster, cluster.id == selectedId, onSelect)
+        }
+        val gone = markers.keys.filter { it !in alive }
+        for (id in gone) {
+            markers.remove(id)?.let { mapView.overlays.remove(it) }
         }
         mapView.invalidate()
     }
 
     AndroidView(modifier = modifier, factory = { mapView })
+}
+
+private fun bind(
+    marker: Marker,
+    mapView: MapView,
+    cluster: Cluster,
+    selected: Boolean,
+    onSelect: (String) -> Unit,
+) {
+    val lat = cluster.lat
+    val lng = cluster.lng
+    if (marker.position.latitude != lat || marker.position.longitude != lng) {
+        marker.position = GeoPoint(lat, lng)
+    }
+    // Иконка берётся из кэша PinIcons: присвоить готовый объект дёшево,
+    // дорого было рисовать новый битмап.
+    marker.icon = PinIcons.forCluster(mapView.resources, cluster, selected)
+    val single = cluster.single
+    marker.setOnMarkerClickListener { _, _ ->
+        if (single != null) {
+            onSelect(single.id)
+        } else {
+            // По группе открывать нечего — приближаем, пока она не
+            // рассыплется на отдельные станции.
+            mapView.controller.setZoom(mapView.zoomLevelDouble + 2.0)
+            mapView.controller.animateTo(GeoPoint(lat, lng))
+        }
+        true
+    }
 }

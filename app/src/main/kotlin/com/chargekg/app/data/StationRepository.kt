@@ -1,8 +1,11 @@
 package com.chargekg.app.data
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -57,7 +60,13 @@ class StationRepository(
     suspend fun loadFromCache() {
         if (_state.value.stations.isNotEmpty()) return
         val body = cache.read() ?: return
-        val parsed = runCatching { parseStations(body) }.getOrNull() ?: return
+        val parsed = try {
+            parseStationsOffMain(body)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            return
+        }
         _state.value = _state.value.copy(
             // Занятость из кэша обнуляется принудительно. Показать вчерашние
             // «3 свободно» как сегодняшние — соврать ровно там, ради чего
@@ -79,6 +88,11 @@ class StationRepository(
             } else {
                 fetchStatus()
             }
+        } catch (e: CancellationException) {
+            // Отмена — не ошибка: показывать её человеку нечего, а флаг
+            // загрузки снять надо, иначе индикатор крутился бы вечно.
+            _state.value = _state.value.copy(loading = false)
+            throw e
         } catch (e: Exception) {
             // Ловим и IOException, и JSONException: битый ответ для человека
             // ничем не отличается от отсутствия связи — показанное остаётся.
@@ -98,13 +112,13 @@ class StationRepository(
                 ) {
                     _state.value.stations
                 } else {
-                    cache.read()?.let { parseStations(it).stations } ?: emptyList()
+                    cache.read()?.let { parseStationsOffMain(it).stations } ?: emptyList()
                 }
                 _state.value = StationsState(stations, DataOrigin.NETWORK, loading = false)
             }
 
             is StationsFetch.Fresh -> {
-                val parsed = parseStations(fetch.body)
+                val parsed = parseStationsOffMain(fetch.body)
                 cache.write(fetch.body, fetch.etag)
                 // Сохранённая занятость относилась к прежнему составу станций —
                 // с новым списком её ETag подтверждал бы чужие числа.
@@ -127,7 +141,7 @@ class StationRepository(
                 // Сервер подтвердил тот же слепок занятости, значит лежащий
                 // рядом файл — сегодняшний. Без него показанное осталось бы с
                 // обнулённой занятостью после холодного старта.
-                cache.readStatus()?.let { parseStatus(it) } ?: run {
+                cache.readStatus()?.let { parseStatusOffMain(it) } ?: run {
                     fetchFull()
                     return
                 }
@@ -135,7 +149,7 @@ class StationRepository(
 
             is StatusFetch.Fresh -> {
                 cache.writeStatus(fetch.body, fetch.etag)
-                parseStatus(fetch.body)
+                parseStatusOffMain(fetch.body)
             }
         }
 
@@ -154,6 +168,15 @@ class StationRepository(
         val updated = current.map { st -> byId[st.id]?.let { st.withStatus(it) } ?: st }
         _state.value = StationsState(updated, DataOrigin.NETWORK, loading = false)
     }
+
+    // Полный ответ — около 400 КБ JSON и шесть сотен станций. Разбор на
+    // главном потоке ронял кадры ровно на холодном старте, когда карта
+    // рисуется впервые.
+    private suspend fun parseStationsOffMain(body: String) =
+        withContext(Dispatchers.Default) { parseStations(body) }
+
+    private suspend fun parseStatusOffMain(body: String) =
+        withContext(Dispatchers.Default) { parseStatus(body) }
 
     fun station(id: String): Station? = _state.value.stations.firstOrNull { it.id == id }
 

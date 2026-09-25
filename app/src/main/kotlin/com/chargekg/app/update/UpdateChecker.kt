@@ -8,6 +8,7 @@ import android.os.Environment
 import android.provider.Settings
 import androidx.core.content.FileProvider
 import com.chargekg.app.R
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -137,6 +138,24 @@ class UpdateChecker(
         val downloadId = downloadManager.enqueue(request)
         onProgress(context.getString(R.string.update_downloading_start))
 
+        try {
+            awaitDownload(context, downloadManager, downloadId, onProgress)
+        } catch (e: CancellationException) {
+            // Человек нажал «Отмена». Без remove() системный загрузчик докачал
+            // бы файл сам и висел бы в уведомлениях, а в паузе без сети — вечно.
+            downloadManager.remove(downloadId)
+            throw e
+        }
+
+        withContext(Dispatchers.Main) { installApk(context, update.version) }
+    }
+
+    private suspend fun awaitDownload(
+        context: Context,
+        downloadManager: DownloadManager,
+        downloadId: Long,
+        onProgress: (String) -> Unit,
+    ) {
         var finished = false
         while (!finished) {
             // .use{} закрывает курсор на каждом проходе. Закрытие только внутри
@@ -189,8 +208,6 @@ class UpdateChecker(
             }
             if (!finished) delay(500)
         }
-
-        withContext(Dispatchers.Main) { installApk(context, update.version) }
     }
 
     /**

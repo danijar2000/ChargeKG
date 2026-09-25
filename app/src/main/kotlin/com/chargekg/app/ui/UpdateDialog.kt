@@ -14,7 +14,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -23,7 +27,9 @@ import com.chargekg.app.R
 import com.chargekg.app.container
 import com.chargekg.app.update.UpdateChecker
 import com.chargekg.app.util.formatBytes
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 sealed interface UpdateState {
@@ -55,6 +61,8 @@ fun CoroutineScope.launchUpdateCheck(
                 else -> UpdateState.Available(info)
             }
         )
+    } catch (e: CancellationException) {
+        throw e
     } catch (e: Exception) {
         onState(
             if (force) UpdateState.Failed(e.message.orEmpty().ifBlank { e::class.java.simpleName })
@@ -71,6 +79,7 @@ fun UpdateDialog(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var download by remember { mutableStateOf<Job?>(null) }
     if (state is UpdateState.Idle) return
 
     val dismiss = { onState(UpdateState.Idle) }
@@ -141,12 +150,16 @@ fun UpdateDialog(
                         return@TextButton
                     }
                     onState(UpdateState.Downloading(state.info, ""))
-                    scope.launch {
+                    download = scope.launch {
                         try {
                             checker.downloadAndInstall(context, state.info) { progress ->
                                 onState(UpdateState.Downloading(state.info, progress))
                             }
                             onState(UpdateState.Idle)
+                        } catch (e: CancellationException) {
+                            // Отменил человек: диалог уже закрыт кнопкой, а
+                            // «Job was cancelled» в окне ошибки ему ни к чему.
+                            throw e
                         } catch (e: Exception) {
                             onState(
                                 UpdateState.Failed(
@@ -162,9 +175,19 @@ fun UpdateDialog(
             },
         )
 
+        // Закрыть случайным касанием мимо окна нельзя — только кнопкой. Но
+        // кнопка обязана быть: без сети загрузчик стоит в паузе бесконечно, и
+        // окно без выхода держало бы приложение до принудительной остановки.
         is UpdateState.Downloading -> AlertDialog(
             onDismissRequest = {},
             confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = {
+                    download?.cancel()
+                    download = null
+                    dismiss()
+                }) { Text(stringResource(R.string.btn_cancel)) }
+            },
             title = { Text(stringResource(R.string.update_available, state.info.version)) },
             text = {
                 Column(Modifier.fillMaxWidth()) {

@@ -3,7 +3,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
@@ -25,8 +24,6 @@ android {
         versionCode = 6
         versionName = "0.3.0"
 
-        // Локали ограничены тремя: остальные переводы androidx только занимают место.
-        resourceConfigurations += listOf("ru", "ky", "en")
         vectorDrawables.useSupportLibrary = false
 
         // По умолчанию боевой сервер — чтобы отладочная сборка работала на
@@ -73,13 +70,9 @@ android {
         }
     }
 
-    // Имя ассета в релизе на GitHub: ровно его ищет UpdateChecker.
-    applicationVariants.all {
-        val variant = this
-        variant.outputs.all {
-            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            output.outputFileName = "ChargeKG-v${variant.versionName}.apk"
-        }
+    // Локали ограничены тремя: остальные переводы androidx только занимают место.
+    androidResources {
+        localeFilters += listOf("ru", "ky", "en")
     }
 
     packaging {
@@ -107,10 +100,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
     }
 
     buildFeatures {

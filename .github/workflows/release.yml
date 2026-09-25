@@ -62,7 +62,13 @@ jobs:
             echo "::error::APK превысил потолок в 3 МБ"
             exit 1
           fi
-          echo "path=$apk" >> "$GITHUB_OUTPUT"
+          # Имя ассета задаётся здесь: в AGP 9 старый API переименования
+          # выходного файла убран, и Gradle кладёт просто app-release.apk.
+          # UpdateChecker имя не читает, но человек, качающий APK руками со
+          # страницы релиза, должен видеть версию.
+          named="$RUNNER_TEMP/ChargeKG-v${GITHUB_REF_NAME#v}.apk"
+          cp "$apk" "$named"
+          echo "path=$named" >> "$GITHUB_OUTPUT"
 
       # Имя тега без «v» должно совпадать с versionName: UpdateChecker
       # сравнивает именно их, и расхождение даёт вечное «доступно обновление».
