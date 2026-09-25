@@ -23,6 +23,7 @@
 
     <string name="list_head">Ближайшие</string>
     <string name="list_loading">Загрузка…</string>
+    <string name="list_offline">Нет связи — список не загрузился. Проверьте интернет и откройте список снова.</string>
     <string name="list_no_match">Ничего не подошло под настройки. Смягчите фильтры.</string>
     <string name="list_empty">Станций нет.</string>
 

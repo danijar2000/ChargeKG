@@ -21,7 +21,7 @@ data class Prefs(
     val nav: NavApp = NavApp.DEFAULT,
     val theme: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
-    /** Пусто — язык ещё не выбран, работает значение по умолчанию (русский). */
+    /** Пусто — язык не выбран, берётся язык телефона (или английский, если он не из трёх). */
     val language: String = "",
 )
 

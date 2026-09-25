@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Looper
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 
 /**
@@ -30,41 +31,50 @@ suspend fun getLocationOnce(context: Context): Location? {
         else -> return lastKnown(manager)
     }
 
-    return try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            suspendCancellableCoroutine { cont ->
-                val signal = android.os.CancellationSignal()
-                cont.invokeOnCancellation { signal.cancel() }
-                manager.getCurrentLocation(
-                    provider,
-                    signal,
-                    context.mainExecutor,
-                ) { location -> cont.resume(location ?: lastKnown(manager)) }
-            }
-        } else {
-            suspendCancellableCoroutine { cont ->
-                val listener = object : LocationListener {
-                    override fun onLocationChanged(location: Location) {
-                        manager.removeUpdates(this)
-                        if (cont.isActive) cont.resume(location)
-                    }
+    // Спутники в помещении могут не найтись никогда: requestSingleUpdate на
+    // Android 8–10 ждал бы вечно, держа GPS включённым. Через таймаут берём
+    // последнее известное место — для поиска зарядки его точности хватает.
+    return withTimeoutOrNull(LOCATION_TIMEOUT_MS) { requestFix(manager, provider, context) }
+        ?: lastKnown(manager)
+}
 
-                    // На API 26–28 эти методы абстрактные: без переопределения
-                    // приложение падает при выключении провайдера во время запроса.
-                    override fun onProviderDisabled(provider: String) = Unit
-                    override fun onProviderEnabled(provider: String) = Unit
+private const val LOCATION_TIMEOUT_MS = 15_000L
 
-                    @Deprecated("Требуется на API < 29")
-                    override fun onStatusChanged(p: String?, s: Int, e: android.os.Bundle?) = Unit
-                }
-                cont.invokeOnCancellation { manager.removeUpdates(listener) }
-                @Suppress("DEPRECATION")
-                manager.requestSingleUpdate(provider, listener, Looper.getMainLooper())
-            }
+// Разрешение могут отозвать между проверкой и запросом — тогда SecurityException.
+private suspend fun requestFix(manager: LocationManager, provider: String, context: Context): Location? = try {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        suspendCancellableCoroutine { cont ->
+            val signal = android.os.CancellationSignal()
+            cont.invokeOnCancellation { signal.cancel() }
+            manager.getCurrentLocation(
+                provider,
+                signal,
+                context.mainExecutor,
+            ) { location -> cont.resume(location ?: lastKnown(manager)) }
         }
-    } catch (_: SecurityException) {
-        null
+    } else {
+        suspendCancellableCoroutine { cont ->
+            val listener = object : LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    manager.removeUpdates(this)
+                    if (cont.isActive) cont.resume(location)
+                }
+
+                // На API 26–28 эти методы абстрактные: без переопределения
+                // приложение падает при выключении провайдера во время запроса.
+                override fun onProviderDisabled(provider: String) = Unit
+                override fun onProviderEnabled(provider: String) = Unit
+
+                @Deprecated("Требуется на API < 29")
+                override fun onStatusChanged(p: String?, s: Int, e: android.os.Bundle?) = Unit
+            }
+            cont.invokeOnCancellation { manager.removeUpdates(listener) }
+            @Suppress("DEPRECATION")
+            manager.requestSingleUpdate(provider, listener, Looper.getMainLooper())
+        }
     }
+} catch (_: SecurityException) {
+    null
 }
 
 private fun lastKnown(manager: LocationManager): Location? = try {

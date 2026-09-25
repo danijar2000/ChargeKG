@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 6–11. В резервную копию уходят только настройки человека: фильтры,
+     навигатор, тема, язык. Кэш станций на 400 КБ и ETag восстанавливать
+     вредно — на новом телефоне ETag подтвердил бы файл, которого там нет. -->
+<full-backup-content>
+    <include domain="sharedpref" path="chargekg.xml" />
+</full-backup-content>

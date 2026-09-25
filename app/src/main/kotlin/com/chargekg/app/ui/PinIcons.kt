@@ -8,6 +8,7 @@ import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.content.res.Resources
+import android.util.LruCache
 import com.chargekg.app.domain.Cluster
 
 /**
@@ -27,19 +28,35 @@ object PinIcons {
     private val OFF = Color.rgb(0x9C, 0xA3, 0xAF)
     private val ACCENT = Color.rgb(0x2F, 0x6F, 0xED)
 
-    private val cache = HashMap<String, Drawable>()
+    /**
+     * Потолок в килобайтах. Одна метка — 25–100 КБ в зависимости от плотности
+     * экрана, а сочетаний счётчиков за долгую сессию набегают сотни: без
+     * потолка кэш рос бы, пока жив процесс. Восьми мегабайт хватает на все
+     * сочетания одного слепка: карта перепривязывает иконки при каждом
+     * обновлении, и вытесненная метка рисовалась бы заново на главном потоке.
+     */
+    private const val CACHE_KB = 8 * 1024
+
+    private val cache = object : LruCache<String, Drawable>(CACHE_KB) {
+        override fun sizeOf(key: String, value: Drawable): Int =
+            ((value as? BitmapDrawable)?.bitmap?.allocationByteCount ?: 0) / 1024 + 1
+    }
 
     fun forCluster(resources: Resources, cluster: Cluster, selected: Boolean): Drawable {
         val count = cluster.stations.size
+        // Плотность в ключе: смена масштаба экрана не пересоздаёт активность
+        // (density в configChanges), и без неё метки остались бы прежнего
+        // размера до перезапуска.
+        val dpi = resources.displayMetrics.densityDpi
         val key = if (cluster.unknownBusy) {
-            "u:$count:${cluster.totalPorts}:$selected"
+            "$dpi:u:$count:${cluster.totalPorts}:$selected"
         } else {
-            "$count:${cluster.free}:${cluster.busy}:${cluster.totalPorts}:$selected"
+            "$dpi:$count:${cluster.free}:${cluster.busy}:${cluster.totalPorts}:$selected"
         }
-        return cache.getOrPut(key) { draw(resources, cluster, selected) }
+        return cache.get(key) ?: draw(resources, cluster, selected).also { cache.put(key, it) }
     }
 
-    fun clear() = cache.clear()
+    fun clear() = cache.evictAll()
 
     private fun draw(resources: Resources, cluster: Cluster, selected: Boolean): Drawable {
         val density = resources.displayMetrics.density

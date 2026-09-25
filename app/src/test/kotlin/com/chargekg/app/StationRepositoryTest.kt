@@ -3,12 +3,16 @@ package com.chargekg.app
 import androidx.test.core.app.ApplicationProvider
 import com.chargekg.app.data.ChargeApi
 import com.chargekg.app.data.DataOrigin
+import com.chargekg.app.data.LoadError
 import com.chargekg.app.data.StationCache
 import com.chargekg.app.data.StationRepository
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.SocketPolicy
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -25,6 +29,7 @@ class StationRepositoryTest {
     private lateinit var server: MockWebServer
     private lateinit var cache: StationCache
     private lateinit var repo: StationRepository
+    private lateinit var cacheFile: java.io.File
 
     @Before
     fun setUp() {
@@ -32,6 +37,7 @@ class StationRepositoryTest {
         server.start()
         val context = ApplicationProvider.getApplicationContext<android.app.Application>()
         cache = StationCache(context)
+        cacheFile = java.io.File(context.filesDir, "stations.json")
         cache.clear()
         repo = StationRepository(ChargeApi(OkHttpClient(), server.url("/")), cache)
     }
@@ -108,6 +114,64 @@ class StationRepositoryTest {
 
         assertNotNull(repo.state.value.error)
         assertTrue(repo.state.value.stations.isEmpty())
+    }
+
+    @Test
+    fun `304 на пропавший кэш забывает ETag и берёт список целиком`() = runTest {
+        cache.write(BODY, "\"v1\"")
+        cacheFile.delete()
+
+        server.enqueue(MockResponse().setResponseCode(304))
+        server.enqueue(MockResponse().setBody(BODY).setHeader("ETag", "\"v2\""))
+        repo.refresh()
+
+        assertEquals("\"v1\"", server.takeRequest().getHeader("If-None-Match"))
+        // Без повтора карта осталась бы пустой, пока сервер отвечает 304.
+        // Таймаут — чтобы поломка валила тест, а не вешала его.
+        val retry = server.takeRequest(1, java.util.concurrent.TimeUnit.SECONDS)
+        assertNotNull("после 304 на пустой кэш список не перезапрошен", retry)
+        assertNull(retry!!.getHeader("If-None-Match"))
+        assertEquals(1, repo.state.value.stations.size)
+        assertEquals("\"v2\"", cache.etag)
+        assertNull(repo.state.value.error)
+    }
+
+    @Test
+    fun `304 на битый кэш не застревает на ошибке разбора`() = runTest {
+        cache.write(BODY, "\"v1\"")
+        cacheFile.writeText("{обрезано")
+
+        server.enqueue(MockResponse().setResponseCode(304))
+        server.enqueue(MockResponse().setBody(BODY).setHeader("ETag", "\"v2\""))
+        repo.refresh()
+
+        assertEquals(2, server.requestCount)
+        assertEquals(2, repo.state.value.stations.single().free)
+        assertNull(repo.state.value.error)
+    }
+
+    @Test
+    fun `обрыв соединения показывается как нет связи, а не текстом OkHttp`() = runTest {
+        // OkHttp сам повторяет запрос после обрыва — обрываем с запасом.
+        repeat(3) {
+            server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AFTER_REQUEST))
+        }
+        repo.refresh()
+
+        assertEquals(LoadError.Offline, repo.state.value.error)
+    }
+
+    @Test
+    fun `второе обновление во время первого не уходит в сеть`() = runTest {
+        server.enqueue(MockResponse().setBody(BODY).setHeader("ETag", "\"v1\""))
+        coroutineScope {
+            launch { repo.refresh() }
+            launch { repo.refresh() }
+        }
+
+        assertEquals(1, server.requestCount)
+        assertEquals(1, repo.state.value.stations.size)
+        assertTrue(!repo.state.value.loading)
     }
 
     private companion object {

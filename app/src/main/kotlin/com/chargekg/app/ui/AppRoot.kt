@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +48,7 @@ import com.chargekg.app.data.LoadError
 import com.chargekg.app.update.UpdateChecker
 import com.chargekg.app.util.getLocationOnce
 import com.chargekg.app.util.hasLocationPermission
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
 
@@ -65,7 +67,9 @@ fun AppRoot(viewModel: MainViewModel) {
     val userLocation by viewModel.userLocation.collectAsStateWithLifecycle()
 
     val mapView = rememberMapView()
-    var panel by remember { mutableStateOf(Panel.NONE) }
+    // Открытая панель переживает смену языка (recreate) и смерть процесса:
+    // иначе человек возвращался бы в приложение к пустой карте.
+    var panel by rememberSaveable { mutableStateOf(Panel.NONE) }
     var updateState by remember { mutableStateOf<UpdateState>(UpdateState.Idle) }
 
     // Автопроверка обновления при запуске: один запрос примерно на 5 КБ,
@@ -82,30 +86,48 @@ fun AppRoot(viewModel: MainViewModel) {
     }
 
     // Карточка станции открывается и по deep link — тогда выделение приходит
-    // до того, как что-то нажали на карте.
-    LaunchedEffect(selectedId) {
-        if (selectedId != null) {
+    // до того, как что-то нажали на карте. При холодном старте станций ещё
+    // нет, поэтому эффект перезапускается, когда они появятся: иначе карточка
+    // открылась бы позже, а карта так и осталась бы над Бишкеком.
+    val stationsReady = stationsState.stations.isNotEmpty()
+    LaunchedEffect(selectedId, stationsReady) {
+        val id = selectedId
+        if (id != null) {
             panel = Panel.STATION
-            viewModel.station(selectedId!!)?.let {
-                mapView.controller.animateTo(GeoPoint(it.lat, it.lng))
+            val station = viewModel.station(id)
+            if (station != null) {
+                mapView.controller.animateTo(GeoPoint(station.lat, station.lng))
+            } else if (stationsState.origin == DataOrigin.NETWORK) {
+                // Свежий список пришёл, а такой станции в нём нет — ссылка
+                // устарела. Пустая панель без содержимого висела бы вечно.
+                Toast.makeText(context, R.string.station_not_found, Toast.LENGTH_SHORT).show()
+                viewModel.select(null)
             }
         } else if (panel == Panel.STATION) {
             panel = Panel.NONE
         }
     }
 
+    // Одно определение места за раз: каждое нажатие добавляло бы ещё одного
+    // слушателя GPS, а ответа можно ждать до пятнадцати секунд.
+    var locating by remember { mutableStateOf<Job?>(null) }
     val locate: () -> Unit = {
-        scope.launch {
-            val location = getLocationOnce(context)
-            viewModel.setUserLocation(location)
-            if (location != null) {
-                mapView.controller.animateTo(GeoPoint(location.latitude, location.longitude))
-                mapView.controller.setZoom(14.0)
-            } else {
-                Toast.makeText(context, R.string.geo_unavailable, Toast.LENGTH_SHORT).show()
+        if (locating == null) locating = scope.launch {
+            try {
+                val location = getLocationOnce(context)
+                viewModel.setUserLocation(location)
+                if (location != null) {
+                    mapView.controller.animateTo(GeoPoint(location.latitude, location.longitude))
+                    mapView.controller.setZoom(14.0)
+                } else {
+                    Toast.makeText(context, R.string.geo_unavailable, Toast.LENGTH_SHORT).show()
+                }
+            } finally {
+                // Сброс — это и сигнал кнопке перестать крутиться: состояние
+                // самой Job Compose не наблюдает.
+                locating = null
             }
         }
-        Unit
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -155,7 +177,12 @@ fun AppRoot(viewModel: MainViewModel) {
                         ?: (mapView.mapCenter as GeoPoint).let { Anchor(it.latitude, it.longitude, false) }
                     viewModel.loadNearest(anchor)
                 }
-                MapButton(AppIcons.MyLocation, R.string.btn_locate, onClick = requestLocation)
+                MapButton(
+                    AppIcons.MyLocation,
+                    R.string.btn_locate,
+                    busy = locating != null,
+                    onClick = requestLocation,
+                )
                 MapButton(AppIcons.Refresh, R.string.btn_refresh) { viewModel.refresh() }
                 MapButton(AppIcons.Settings, R.string.settings_title) { panel = Panel.SETTINGS }
             }
@@ -223,7 +250,12 @@ fun AppRoot(viewModel: MainViewModel) {
 }
 
 @Composable
-private fun MapButton(icon: ImageVector, labelRes: Int, onClick: () -> Unit) {
+private fun MapButton(
+    icon: ImageVector,
+    labelRes: Int,
+    busy: Boolean = false,
+    onClick: () -> Unit,
+) {
     FilledIconButton(
         onClick = onClick,
         colors = IconButtonDefaults.filledIconButtonColors(
@@ -231,7 +263,13 @@ private fun MapButton(icon: ImageVector, labelRes: Int, onClick: () -> Unit) {
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
     ) {
-        Icon(icon, contentDescription = stringResource(labelRes))
+        // Пока ждём спутники, кнопка крутится: иначе полминуты тишины
+        // выглядели бы как неработающая кнопка.
+        if (busy) {
+            CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+        } else {
+            Icon(icon, contentDescription = stringResource(labelRes))
+        }
     }
 }
 

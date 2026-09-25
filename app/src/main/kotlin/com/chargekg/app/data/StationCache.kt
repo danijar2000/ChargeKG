@@ -31,7 +31,7 @@ class StationCache(context: Context) {
 
     suspend fun write(body: String, etag: String?) = withContext(Dispatchers.IO) {
         runCatching {
-            file.writeText(body)
+            writeAtomically(file, body)
             // ETag пишется только после успешной записи тела: иначе после
             // сбоя записи клиент получал бы 304 на пустой кэш и оставался
             // без данных до смены слепка на сервере.
@@ -54,7 +54,7 @@ class StationCache(context: Context) {
      */
     suspend fun writeStatus(body: String, etag: String?) = withContext(Dispatchers.IO) {
         runCatching {
-            statusFile.writeText(body)
+            writeAtomically(statusFile, body)
             prefs.edit().putString(KEY_STATUS_ETAG, etag).apply()
         }
         Unit
@@ -74,6 +74,21 @@ class StationCache(context: Context) {
         runCatching { file.delete() }
         runCatching { statusFile.delete() }
         prefs.edit().clear().apply()
+    }
+
+    /**
+     * Сначала во временный файл, потом переименование. Процесс, убитый посреди
+     * writeText, оставлял бы обрезанный JSON под прежним ETag — и сервер
+     * отвечал бы 304 на битый кэш. Переименование в пределах каталога
+     * атомарно: на месте файла лежит либо старое тело, либо новое целиком.
+     */
+    private fun writeAtomically(target: File, body: String) {
+        val tmp = File(target.parentFile, target.name + ".tmp")
+        tmp.writeText(body)
+        if (!tmp.renameTo(target)) {
+            tmp.delete()
+            error("не удалось заменить ${target.name}")
+        }
     }
 
     private companion object {

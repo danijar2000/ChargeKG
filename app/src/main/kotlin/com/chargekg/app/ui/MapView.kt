@@ -9,6 +9,8 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -59,16 +61,23 @@ fun configureOsmdroid(context: Context) {
 @Composable
 fun rememberMapView(): MapView {
     val context = LocalContext.current
-    val mapView = remember {
-        MapView(context).apply {
-            setTileSource(TileSourceFactory.MAPNIK)
-            setMultiTouchControls(true)
-            // Кнопки зума не нужны: жесты есть у всех, а панель перекрывает карту.
-            zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
-            controller.setZoom(START_ZOOM)
-            controller.setCenter(BISHKEK)
-        }
+    fun create(center: GeoPoint, zoom: Double) = MapView(context).apply {
+        setTileSource(TileSourceFactory.MAPNIK)
+        setMultiTouchControls(true)
+        // Кнопки зума не нужны: жесты есть у всех, а панель перекрывает карту.
+        zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
+        controller.setZoom(zoom)
+        controller.setCenter(center)
     }
+    // Сохраняется только камера — центр и зум, читаются в момент сохранения.
+    // Смена языка пересоздаёт активность, и без этого карта каждый раз
+    // возвращалась бы к Бишкеку, как и после смерти процесса.
+    val mapView = rememberSaveable(
+        saver = Saver<MapView, List<Double>>(
+            save = { listOf(it.mapCenter.latitude, it.mapCenter.longitude, it.zoomLevelDouble) },
+            restore = { create(GeoPoint(it[0], it[1]), it[2]) },
+        )
+    ) { create(BISHKEK, START_ZOOM) }
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->

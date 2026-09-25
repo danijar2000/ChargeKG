@@ -85,8 +85,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          notes=CHANGELOG.md
-          if [ -f "$notes" ]; then
+          # В заметки идёт только раздел этой версии: их показывает диалог
+          # обновления, и вся история версий там была бы простынёй.
+          notes="$RUNNER_TEMP/notes.md"
+          version="${GITHUB_REF_NAME#v}"
+          if [ -f CHANGELOG.md ]; then
+            awk -v v="## $version" '$0 == v {on=1; next} /^## / {on=0} on' CHANGELOG.md \
+              | sed -e '/./,$!d' > "$notes"
+          fi
+          if [ -s "$notes" ]; then
             gh release create "$GITHUB_REF_NAME" "${{ steps.apk.outputs.path }}" \
               --title "$GITHUB_REF_NAME" --notes-file "$notes"
           else

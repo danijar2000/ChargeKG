@@ -61,6 +61,9 @@ fun NearestSheet(
                         Text(stringResource(R.string.list_loading))
                     }
 
+                is NearestState.Offline ->
+                    Text(stringResource(R.string.list_offline))
+
                 is NearestState.Failed ->
                     Text(stringResource(R.string.banner_error, s.message))
 

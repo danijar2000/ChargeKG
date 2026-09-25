@@ -20,6 +20,7 @@
 
     <string name="list_head">Жакындагылар</string>
     <string name="list_loading">Жүктөлүүдө…</string>
+    <string name="list_offline">Байланыш жок — тизме жүктөлгөн жок. Интернетти текшерип, тизмени кайра ачыңыз.</string>
     <string name="list_no_match">Тандоолорго эч нерсе туура келген жок. Чыпкаларды жумшартыңыз.</string>
     <string name="list_empty">Станциялар жок.</string>
 

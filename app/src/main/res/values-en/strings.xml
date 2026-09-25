@@ -20,6 +20,7 @@
 
     <string name="list_head">Nearest</string>
     <string name="list_loading">Loading…</string>
+    <string name="list_offline">No connection — the list did not load. Check the internet and open the list again.</string>
     <string name="list_no_match">Nothing matches your filters. Try relaxing them.</string>
     <string name="list_empty">No stations.</string>
 

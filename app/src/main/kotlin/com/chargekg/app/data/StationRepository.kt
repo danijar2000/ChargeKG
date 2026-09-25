@@ -5,10 +5,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
-import java.net.ConnectException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
+import java.io.IOException
 
 /** Откуда взяты станции, лежащие сейчас в [StationsState.stations]. */
 enum class DataOrigin { NONE, CACHE, NETWORK }
@@ -56,6 +55,13 @@ class StationRepository(
     private val _state = MutableStateFlow(StationsState())
     val state: StateFlow<StationsState> = _state.asStateFlow()
 
+    /**
+     * Обновление идёт одно за раз. Кнопка «Обновить» доступна и во время
+     * стартовой загрузки: без замка медленная сеть скачивала бы 400 КБ дважды,
+     * а два прохода наперегонки переписывали бы состояние друг друга.
+     */
+    private val refreshing = Mutex()
+
     /** Показать сохранённое. Вызывается один раз при старте, до сети. */
     suspend fun loadFromCache() {
         if (_state.value.stations.isNotEmpty()) return
@@ -81,6 +87,8 @@ class StationRepository(
      * показано, остаётся на экране.
      */
     suspend fun refresh() {
+        // Уже идёт — второй проход ничего нового не принесёт.
+        if (!refreshing.tryLock()) return
         _state.value = _state.value.copy(loading = true, error = null)
         try {
             if (_state.value.stations.isEmpty()) {
@@ -97,11 +105,13 @@ class StationRepository(
             // Ловим и IOException, и JSONException: битый ответ для человека
             // ничем не отличается от отсутствия связи — показанное остаётся.
             _state.value = _state.value.copy(loading = false, error = toLoadError(e))
+        } finally {
+            refreshing.unlock()
         }
     }
 
-    private suspend fun fetchFull() {
-        when (val fetch = api.stations(cache.etag)) {
+    private suspend fun fetchFull(etag: String? = cache.etag) {
+        when (val fetch = api.stations(etag)) {
             is StationsFetch.NotModified -> {
                 // Тела нет, но сервер подтвердил, что слепок тот же — значит
                 // занятость В КЭШЕ актуальна. Перечитать его обязательно:
@@ -112,7 +122,17 @@ class StationRepository(
                 ) {
                     _state.value.stations
                 } else {
-                    cache.read()?.let { parseStationsOffMain(it).stations } ?: emptyList()
+                    readCachedStations()
+                }
+                if (stations == null) {
+                    // ETag есть, а файла нет или он битый. Поверить 304 значило
+                    // бы остаться с пустой картой до смены слепка на сервере:
+                    // каждый следующий запрос снова получал бы 304. Забываем
+                    // ETag и берём список целиком.
+                    if (etag == null) throw IOException("304 без условного запроса")
+                    cache.clear()
+                    fetchFull(etag = null)
+                    return
                 }
                 _state.value = StationsState(stations, DataOrigin.NETWORK, loading = false)
             }
@@ -141,7 +161,9 @@ class StationRepository(
                 // Сервер подтвердил тот же слепок занятости, значит лежащий
                 // рядом файл — сегодняшний. Без него показанное осталось бы с
                 // обнулённой занятостью после холодного старта.
-                cache.readStatus()?.let { parseStatusOffMain(it) } ?: run {
+                readCachedStatus() ?: run {
+                    // Файла нет или он битый — ETag ему больше не верим.
+                    cache.clearStatus()
                     fetchFull()
                     return
                 }
@@ -178,12 +200,38 @@ class StationRepository(
     private suspend fun parseStatusOffMain(body: String) =
         withContext(Dispatchers.Default) { parseStatus(body) }
 
+    /** Станции из файла; null — файла нет или разобрать его не удалось. */
+    private suspend fun readCachedStations(): List<Station>? {
+        val body = cache.read() ?: return null
+        return try {
+            parseStationsOffMain(body).stations
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private suspend fun readCachedStatus(): List<StationStatus>? {
+        val body = cache.readStatus() ?: return null
+        return try {
+            parseStatusOffMain(body)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     fun station(id: String): Station? = _state.value.stations.firstOrNull { it.id == id }
 
     private fun toLoadError(e: Exception): LoadError = when (e) {
         // ApiException несёт пояснение сервера по-русски — его и показываем.
         is ApiException -> LoadError.Message(e.message.orEmpty())
-        is UnknownHostException, is ConnectException, is SocketTimeoutException -> LoadError.Offline
+        // Любая сетевая поломка для человека — «нет связи»: обрыв при смене
+        // сети, captive portal в кафе, неверное время на телефоне (SSL). Её
+        // английский текст из OkHttp ему ничего не скажет.
+        is IOException -> LoadError.Offline
         else -> LoadError.Message(e.message?.takeIf { it.isNotBlank() } ?: e::class.java.simpleName)
     }
 }
