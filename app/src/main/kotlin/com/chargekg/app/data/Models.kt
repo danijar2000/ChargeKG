@@ -16,7 +16,13 @@ enum class Network(val id: String, val title: String, val pkg: String, val schem
 
     // Собственной browsable-схемы у RedPay в манифесте нет: только ссылки
     // https на redpay.page.link и nambaone.app — их снаружи не собрать.
-    REDPAY("redpay", "RedPay", "kg.redpay", null);
+    REDPAY("redpay", "RedPay", "kg.redpay", null),
+
+    // TazaTok (оператор ecoauto.kg). В манифесте есть browsable intent-filter
+    // со схемой `tazatok`, но ссылки на конкретную станцию у сети нет (как у
+    // EVION/We way/RedPay), поэтому scheme=null: приложение открываем по имени
+    // пакета. Схему не ставим, пока открытие станции не проверено на устройстве.
+    ECOAUTO("ecoauto", "TazaTok", "com.aits.tazatok", null);
 
     companion object {
         fun of(id: String): Network? = entries.firstOrNull { it.id == id }

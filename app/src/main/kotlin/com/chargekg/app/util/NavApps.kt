@@ -108,7 +108,7 @@ enum class NetworkAppResult {
  */
 internal fun stationUrl(network: Network, nativeId: String): String? = when (network) {
     Network.SPARK -> "spark://charging-station/$nativeId"
-    Network.CHARGE24, Network.WEWAY, Network.EVION, Network.REDPAY -> null
+    Network.CHARGE24, Network.WEWAY, Network.EVION, Network.REDPAY, Network.ECOAUTO -> null
 }
 
 /**

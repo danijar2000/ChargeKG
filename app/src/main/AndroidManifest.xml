@@ -16,6 +16,7 @@
         <package android:name="kg.evion.app" />
         <package android:name="com.pay24.charge24" />
         <package android:name="kg.redpay" />
+        <package android:name="com.aits.tazatok" />
         <package android:name="ru.dublgis.dgismobile" />
         <package android:name="ru.yandex.yandexnavi" />
         <package android:name="ru.yandex.yandexmaps" />

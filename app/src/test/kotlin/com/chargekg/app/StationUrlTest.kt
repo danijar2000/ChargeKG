@@ -30,5 +30,8 @@ class StationUrlTest {
         assertNull(stationUrl(Network.WEWAY, "10"))
         assertNull(stationUrl(Network.EVION, "646c7cf1b24a83a132b62969"))
         assertNull(stationUrl(Network.REDPAY, "loc-001"))
+        // TazaTok: browsable-схема в манифесте есть, но ссылки на станцию нет —
+        // открываем по имени пакета, пока иное не проверено на устройстве.
+        assertNull(stationUrl(Network.ECOAUTO, "kurmanjan-datka-test1"))
     }
 }
