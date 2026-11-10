@@ -37,9 +37,9 @@
     <string name="filters_all">Все</string>
 
     <string name="power_all">Все</string>
-    <string name="power_slow">Медленная</string>
-    <string name="power_fast">Быстрая</string>
-    <string name="power_ultra">Ультрабыстрая</string>
+    <string name="power_slow">До 22 кВт</string>
+    <string name="power_fast">22–100 кВт</string>
+    <string name="power_ultra">100+ кВт</string>
 
     <string name="nav_auto">Автоматически</string>
     <string name="nav_dgis">2ГИС</string>
@@ -86,7 +86,7 @@
     <string name="share_text">Карта зарядных станций Кыргызстана: видно, где свободны порты.</string>
 
     <string name="banner_offline">Нет связи — показана последняя загруженная карта. Адреса, разъёмы и цены верны, а сколько портов свободно сейчас, неизвестно.</string>
-    <string name="banner_stale">У %1$d станций занятость устарела — сеть не отвечает. Они показаны серым: адреса и цены верны, число свободных портов неизвестно.</string>
+    <string name="banner_stale">Часть станций без свежей занятости — они серые</string>
     <string name="banner_no_connection">Нет связи. Проверьте интернет и обновите — карта появится, как только сервер ответит.</string>
     <string name="banner_error">Не удалось обновить данные: %1$s</string>
     <string name="banner_error_cached">Не удалось обновить данные: %1$s. Показано последнее загруженное.</string>
@@ -136,4 +136,9 @@
     <string name="update_needs_permission">Разрешите установку из этого источника</string>
     <string name="update_needs_permission_hint">Android требует явного разрешения, чтобы приложение могло установить своё обновление.</string>
     <string name="update_open_permission">Открыть настройки</string>
+    <string name="filters_show">Показать станции: %1$d</string>
+    <string name="filters_hint_solo">Нажмите, чтобы оставить только нужное</string>
+    <string name="station_status_line">%1$d свободно · %2$d занято · %3$d не на связи</string>
+    <string name="station_merged_show">Показать состав</string>
+    <string name="station_merged_hide">Скрыть состав</string>
 </resources>

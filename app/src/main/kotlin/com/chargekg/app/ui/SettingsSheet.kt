@@ -38,6 +38,7 @@ import com.chargekg.app.container
 import com.chargekg.app.data.Prefs
 import com.chargekg.app.data.ThemeMode
 import com.chargekg.app.update.UpdateChecker
+import com.chargekg.app.util.NavApp
 
 private val LANGUAGES = listOf("ru" to "Русский", "ky" to "Кыргызча", "en" to "English")
 
@@ -64,6 +65,25 @@ fun SettingsSheet(
                 .padding(bottom = 28.dp),
         ) {
             Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineSmall)
+
+            // Навигатор — настройка, а не фильтр станций: выбирают его один раз.
+            Spacer(Modifier.height(16.dp))
+            Text(stringResource(R.string.filters_nav), style = MaterialTheme.typography.titleSmall)
+            FlowRow {
+                for (app in NavApp.entries) {
+                    FilterChip(
+                        selected = prefs.nav == app,
+                        onClick = { viewModel.setNav(app) },
+                        label = { Text(stringResource(app.labelRes)) },
+                        modifier = Modifier.padding(end = 8.dp),
+                    )
+                }
+            }
+            Text(
+                stringResource(R.string.filters_nav_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             Spacer(Modifier.height(16.dp))
             Text(stringResource(R.string.settings_language), style = MaterialTheme.typography.titleSmall)

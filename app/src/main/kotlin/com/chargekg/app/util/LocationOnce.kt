@@ -85,6 +85,17 @@ private fun lastKnown(manager: LocationManager): Location? = try {
     null
 }
 
+/**
+ * Последнее известное место без включения GPS — мгновенно. Нужно при запуске:
+ * карта сразу встаёт над человеком, а свежая точка уточняет её позже.
+ */
+fun lastKnownLocation(context: Context): Location? {
+    if (!hasLocationPermission(context)) return null
+    val manager = ContextCompat.getSystemService(context, LocationManager::class.java)
+        ?: return null
+    return lastKnown(manager)
+}
+
 fun hasLocationPermission(context: Context): Boolean =
     ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) ==
         PackageManager.PERMISSION_GRANTED ||

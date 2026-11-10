@@ -15,11 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -28,6 +28,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,10 +42,10 @@ import com.chargekg.app.R
 import com.chargekg.app.data.Connector
 import com.chargekg.app.data.Station
 import com.chargekg.app.util.NavApp
+import com.chargekg.app.util.NetworkAppResult
 import com.chargekg.app.util.formatDistance
 import com.chargekg.app.util.formatDuration
 import com.chargekg.app.util.formatPower
-import com.chargekg.app.util.NetworkAppResult
 import com.chargekg.app.util.openNetworkApp
 import com.chargekg.app.util.openRoute
 import java.util.Locale
@@ -49,18 +53,27 @@ import java.util.Locale
 /** Ссылка на станцию: она же уходит в «поделиться» и открывается deep link'ом. */
 fun stationLink(station: Station) = "https://chargekg.com/s/${station.id}"
 
+/**
+ * Карточка станции. Порядок — по тому, что человек ищет: есть ли свободное,
+ * подходит ли разъём и почём, как доехать. «Маршрут» закреплён внизу и виден
+ * всегда — раньше на больших площадках до него приходилось листать полсотни
+ * строк.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StationSheet(station: Station, nav: NavApp, onDismiss: () -> Unit) {
     val context = LocalContext.current
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    // Без промежуточного положения: в нём низ панели уходит за экран вместе
+    // с закреплённой кнопкой маршрута. Высота и так по содержимому.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showMerged by rememberSaveable(station.id) { mutableStateOf(false) }
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         Column(
             Modifier
+                .weight(1f, fill = false)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 28.dp),
+                .padding(horizontal = 20.dp),
         ) {
             Text(station.name, style = MaterialTheme.typography.headlineSmall)
             if (station.address.isNotBlank()) {
@@ -83,7 +96,7 @@ fun StationSheet(station: Station, nav: NavApp, onDismiss: () -> Unit) {
 
             // Расстояние есть только когда карточка открыта из списка ближайших.
             station.airM?.let { air ->
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(4.dp))
                 val text = if (station.roadM != null && station.roadS != null) {
                     "${formatDistance(context, station.roadM)} · ${formatDuration(context, station.roadS)}"
                 } else {
@@ -108,45 +121,48 @@ fun StationSheet(station: Station, nav: NavApp, onDismiss: () -> Unit) {
                 }
             }
 
+            Spacer(Modifier.height(12.dp))
+            HorizontalDivider()
+            Spacer(Modifier.height(4.dp))
+
+            // Одинаковые разъёмы сведены в одну строку «× N»: у площадки на
+            // 21 стойку раньше было 42 строки одного и того же GB/T.
+            for (group in groupConnectors(station.connectors)) {
+                ConnectorRow(group)
+            }
+
+            // Состав площадки нужен редко, поэтому свёрнут: раньше этот
+            // список целиком занимал первый экран карточки.
             if (station.mergedCount > 1) {
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    stringResource(R.string.station_merged, station.mergedCount),
-                    style = MaterialTheme.typography.labelLarge,
-                )
-                for (part in station.merged) {
+                Spacer(Modifier.height(4.dp))
+                TextButton(
+                    onClick = { showMerged = !showMerged },
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
+                ) {
                     Text(
-                        "• ${part.name}" + if (part.address.isNotBlank()) ", ${part.address}" else "",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        stringResource(R.string.station_merged, station.mergedCount) + " · " +
+                            stringResource(
+                                if (showMerged) R.string.station_merged_hide else R.string.station_merged_show
+                            ),
                     )
+                }
+                if (showMerged) {
+                    for (part in station.merged) {
+                        Text(
+                            "• ${part.name}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
-            HorizontalDivider()
-            Spacer(Modifier.height(12.dp))
-
-            for (connector in station.connectors) {
-                ConnectorRow(connector)
-            }
-
-            Spacer(Modifier.height(20.dp))
-            Button(
-                onClick = {
-                    if (!openRoute(context, station, nav)) {
-                        Toast.makeText(context, R.string.station_no_nav, Toast.LENGTH_SHORT).show()
-                    }
-                },
+            Spacer(Modifier.height(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Icon(AppIcons.Route, contentDescription = null, Modifier.size(18.dp))
-                Spacer(Modifier.size(8.dp))
-                Text(stringResource(R.string.station_route))
-            }
-
-            Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 station.network?.let {
                     OutlinedButton(
                         onClick = {
@@ -158,32 +174,40 @@ fun StationSheet(station: Station, nav: NavApp, onDismiss: () -> Unit) {
                                 NetworkAppResult.APP_ONLY -> R.string.station_app_no_link
                                 NetworkAppResult.FAILED -> R.string.station_no_app
                             }
-                            message?.let {
-                                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-                            }
+                            message?.let { Toast.makeText(context, it, Toast.LENGTH_LONG).show() }
                         },
                         modifier = Modifier.weight(1f),
                     ) {
                         Icon(AppIcons.OpenApp, contentDescription = null, Modifier.size(18.dp))
                         Spacer(Modifier.size(6.dp))
-                        Text(stringResource(R.string.station_app))
+                        Text(it.title, maxLines = 1)
                     }
                 }
-                OutlinedButton(
-                    onClick = { shareStation(context, station) },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Icon(AppIcons.Share, contentDescription = null, Modifier.size(18.dp))
-                    Spacer(Modifier.size(6.dp))
-                    Text(stringResource(R.string.btn_share))
+                IconButton(onClick = { shareStation(context, station) }) {
+                    Icon(AppIcons.Share, contentDescription = stringResource(R.string.btn_share))
+                }
+                IconButton(onClick = { copyCoordinates(context, station) }) {
+                    Icon(AppIcons.Copy, contentDescription = stringResource(R.string.btn_copy))
                 }
             }
+            Spacer(Modifier.height(8.dp))
+        }
 
-            TextButton(onClick = { copyCoordinates(context, station) }) {
-                Icon(AppIcons.Copy, contentDescription = null, Modifier.size(18.dp))
-                Spacer(Modifier.size(6.dp))
-                Text(stringResource(R.string.btn_copy))
-            }
+        Button(
+            onClick = {
+                if (!openRoute(context, station, nav)) {
+                    Toast.makeText(context, R.string.station_no_nav, Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(top = 4.dp, bottom = 20.dp)
+                .height(52.dp),
+        ) {
+            Icon(AppIcons.Route, contentDescription = null, Modifier.size(20.dp))
+            Spacer(Modifier.size(8.dp))
+            Text(stringResource(R.string.station_route), style = MaterialTheme.typography.titleMedium)
         }
     }
 }
@@ -200,23 +224,39 @@ private fun Availability(station: Station) {
         )
         return
     }
+    // Раньше было «8 из 42», и 26 мёртвых портов читались как занятые.
+    // Свободные, занятые и не на связи — разные решения для водителя.
+    val free = station.free ?: 0
+    val busy = station.busy ?: 0
+    val offline = station.offline ?: (station.total - free - busy).coerceAtLeast(0)
     Text(
-        stringResource(R.string.station_free_of, station.free ?: 0, station.total),
+        stringResource(R.string.station_status_line, free, busy, offline),
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.SemiBold,
-        color = if ((station.free ?: 0) > 0) StatusColors.free else StatusColors.busy,
+        color = if (free > 0) StatusColors.free else StatusColors.busy,
     )
 }
 
+/** Разъёмы одной станции с одинаковыми типом, мощностью и ценой. */
+internal data class ConnectorGroup(val sample: Connector, val count: Int)
+
+internal fun groupConnectors(connectors: List<Connector>): List<ConnectorGroup> =
+    connectors
+        .groupBy { Triple(it.type?.id ?: it.rawType, it.power, it.priceText) }
+        .values
+        .map { ConnectorGroup(it.first(), it.size) }
+        // Самые мощные сверху: их и ищут.
+        .sortedByDescending { it.sample.power }
+
 @Composable
-private fun ConnectorRow(connector: Connector) {
+private fun ConnectorRow(group: ConnectorGroup) {
     val context = LocalContext.current
+    val connector = group.sample
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         // Значок разъёма — тот же, что на сайте. Для неопознанного типа его
         // нет, и тогда строка начинается сразу с названия.
@@ -227,21 +267,30 @@ private fun ConnectorRow(connector: Connector) {
                 modifier = Modifier.size(28.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(Modifier.size(10.dp))
+            Spacer(Modifier.size(12.dp))
         }
         Column(Modifier.weight(1f)) {
             // Когда сервер не смог опознать разъём, показывается исходное
             // название сети: «прочее» без пояснения бесполезно.
             val title = connector.type?.title
                 ?: connector.rawType.ifBlank { stringResource(R.string.type_other) }
-            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "$title · ${formatPower(context, connector.power)}",
+                style = MaterialTheme.typography.bodyLarge,
+            )
             Text(
                 connector.priceText.ifBlank { stringResource(R.string.station_price_unknown) },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        AssistChip(onClick = {}, label = { Text(formatPower(context, connector.power)) })
+        if (group.count > 1) {
+            Text(
+                "× ${group.count}",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 

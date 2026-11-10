@@ -34,9 +34,9 @@
     <string name="filters_all">All</string>
 
     <string name="power_all">All</string>
-    <string name="power_slow">Slow</string>
-    <string name="power_fast">Fast</string>
-    <string name="power_ultra">Ultra-fast</string>
+    <string name="power_slow">Up to 22 kW</string>
+    <string name="power_fast">22–100 kW</string>
+    <string name="power_ultra">100+ kW</string>
 
     <string name="nav_auto">Automatic</string>
     <string name="nav_dgis">2GIS</string>
@@ -83,7 +83,7 @@
     <string name="share_text">Map of EV charging stations in Kyrgyzstan: see which ports are free.</string>
 
     <string name="banner_offline">No connection — showing the last loaded map. Addresses, connectors and prices are correct, but how many ports are free right now is unknown.</string>
-    <string name="banner_stale">%1$d stations have stale availability — their network is not responding. They are shown in grey: addresses and prices are correct, the number of free ports is unknown.</string>
+    <string name="banner_stale">Some stations have no fresh availability — shown in grey</string>
     <string name="banner_no_connection">No connection. Check the internet and refresh — the map appears as soon as the server answers.</string>
     <string name="banner_error">Could not refresh the data: %1$s</string>
     <string name="banner_error_cached">Could not refresh the data: %1$s. Showing the last loaded copy.</string>
@@ -133,4 +133,9 @@
     <string name="update_needs_permission">Allow installing from this source</string>
     <string name="update_needs_permission_hint">Android requires explicit permission before the app can install its own update.</string>
     <string name="update_open_permission">Open settings</string>
+    <string name="filters_show">Show stations: %1$d</string>
+    <string name="filters_hint_solo">Tap to keep only what you need</string>
+    <string name="station_status_line">%1$d free · %2$d busy · %3$d offline</string>
+    <string name="station_merged_show">Show list</string>
+    <string name="station_merged_hide">Hide list</string>
 </resources>

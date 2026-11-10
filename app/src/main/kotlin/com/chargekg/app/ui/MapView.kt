@@ -1,6 +1,8 @@
 package com.chargekg.app.ui
 
 import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.preference.PreferenceManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,6 +34,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Overlay
 
 /** Бишкек — стартовый вид карты, как и на сайте. */
 val BISHKEK = GeoPoint(42.8746, 74.6122)
@@ -96,15 +99,50 @@ fun rememberMapView(): MapView {
     return mapView
 }
 
+/**
+ * Точка «я»: синий круг с белой обводкой и полупрозрачным ореолом — привычный
+ * по любым картам знак. Рисуется прямо на канве, без битмапов и маркеров:
+ * ей не нужны клики, а зачистка меток по типу Marker её не заденет.
+ */
+private class MeOverlay(private val density: Float) : Overlay() {
+    var point: GeoPoint? = null
+    private val px = android.graphics.Point()
+    private val halo = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0x332F6FED }
+    private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF2F6FED.toInt() }
+    private val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = 2.5f * density
+    }
+
+    override fun draw(c: Canvas, osmv: MapView, shadow: Boolean) {
+        if (shadow) return
+        val g = point ?: return
+        osmv.projection.toPixels(g, px)
+        val x = px.x.toFloat()
+        val y = px.y.toFloat()
+        c.drawCircle(x, y, 18f * density, halo)
+        c.drawCircle(x, y, 7f * density, fill)
+        c.drawCircle(x, y, 7f * density, ring)
+    }
+}
+
 @Composable
 fun StationMap(
     mapView: MapView,
     stations: List<Station>,
     selectedId: String?,
     onSelect: (String) -> Unit,
+    me: GeoPoint?,
     modifier: Modifier = Modifier,
 ) {
     val resources = LocalContext.current.resources
+    val meOverlay = remember(mapView) { MeOverlay(resources.displayMetrics.density) }
+    LaunchedEffect(me) {
+        meOverlay.point = me
+        if (me != null && meOverlay !in mapView.overlays) mapView.overlays.add(meOverlay)
+        mapView.invalidate()
+    }
     var zoom by remember { mutableDoubleStateOf(mapView.zoomLevelDouble) }
 
     // Состав групп зависит только от зума, поэтому слушаем именно его. При
@@ -168,6 +206,8 @@ fun StationMap(
         for (id in gone) {
             markers.remove(id)?.let { mapView.overlays.remove(it) }
         }
+        // Новые метки добавляются в конец и легли бы поверх точки «я».
+        if (mapView.overlays.remove(meOverlay)) mapView.overlays.add(meOverlay)
         mapView.invalidate()
     }
 

@@ -29,6 +29,12 @@ object AppIcons {
         close()
     }
 
+    // Material «check»: 9 16.17 4.83 12 3.41 13.41 9 19 21 7 19.59 5.59z
+    val Check = icon("Check") {
+        moveTo(9f, 16.17f); lineTo(4.83f, 12f); lineTo(3.41f, 13.41f); lineTo(9f, 19f)
+        lineTo(21f, 7f); lineTo(19.59f, 5.59f); close()
+    }
+
     val Filter = icon("Filter") {
         moveTo(3f, 5f); lineTo(21f, 5f); lineTo(14f, 13f); lineTo(14f, 20f)
         lineTo(10f, 18f); lineTo(10f, 13f); close()

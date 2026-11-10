@@ -13,9 +13,9 @@ import com.chargekg.app.domain.Cluster
 
 /**
  * Метка станции: кольцо, разбитое по числу портов — зелёное свободные,
- * красное занятые, серое не в сети; в центре общее число портов.
+ * красное занятые, серое не в сети; в центре число свободных портов.
  *
- * Ровно так же метка устроена на сайте. Если сеть перестала отвечать, кольцо
+ * Если сеть перестала отвечать, кольцо
  * становится целиком серым: показать устаревшую занятость как настоящую
  * значило бы ввести человека в заблуждение.
  */
@@ -110,18 +110,27 @@ object PinIcons {
             }
         }
 
+        // В центре — СВОБОДНЫЕ порты: ради этого числа карту и открывают.
+        // Общее количество и так читается по кольцу. Неизвестная занятость —
+        // «?», а не 0: «нет свободных» и «не знаем» — разные вещи.
+        val unknown = cluster.unknownBusy || total <= 0
+        val freeNow = if (unknown) 0 else cluster.free.coerceIn(0, total)
+        val label = if (unknown) "?" else freeNow.toString()
         val text = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.rgb(0x1F, 0x29, 0x37)
+            color = when {
+                unknown -> OFF
+                freeNow > 0 -> FREE
+                else -> BUSY
+            }
             textAlign = Paint.Align.CENTER
-            textSize = px * 0.42f
+            textSize = px * if (label.length > 2) 0.34f else 0.42f
             isFakeBoldText = true
         }
         val baseline = px / 2f - (text.descent() + text.ascent()) / 2f
-        canvas.drawText(total.toString(), px / 2f, baseline, text)
+        canvas.drawText(label, px / 2f, baseline, text)
 
-        // В центре всегда число ПОРТОВ — так же, как на сайте. Сколько станций
-        // свёрнуто в метку, показывает отдельный значок в углу: иначе одно
-        // число означало бы то порты, то станции, и метка врала бы.
+        // Сколько станций свёрнуто в метку, показывает отдельный значок в
+        // углу: иначе одно число означало бы то порты, то станции.
         val count = cluster.stations.size
         if (count > 1) {
             val badgeR = px * 0.20f

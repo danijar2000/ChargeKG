@@ -34,9 +34,9 @@
     <string name="filters_all">Баары</string>
 
     <string name="power_all">Баары</string>
-    <string name="power_slow">Жай</string>
-    <string name="power_fast">Тез</string>
-    <string name="power_ultra">Өтө тез</string>
+    <string name="power_slow">22 кВтка чейин</string>
+    <string name="power_fast">22–100 кВт</string>
+    <string name="power_ultra">100+ кВт</string>
 
     <string name="nav_auto">Автоматтык түрдө</string>
     <!-- Ниже — совпадает с русским: названия брендов и общепринятые сокращения. -->
@@ -84,7 +84,7 @@
     <string name="share_text">Кыргызстандын кубаттоо станцияларынын картасы: кайсы порттор бош экени көрүнөт.</string>
 
     <string name="banner_offline">Байланыш жок — акыркы жүктөлгөн карта көрсөтүлдү. Даректер, коннекторлор жана баалар туура, бирок азыр канча порт бош экени белгисиз.</string>
-    <string name="banner_stale">%1$d станциянын маалыматы эскирген — тармак жооп бербейт. Алар боз түстө: даректери менен баалары туура, бош порттордун саны белгисиз.</string>
+    <string name="banner_stale">Айрым станциялардын маалыматы эскирген — алар боз түстө</string>
     <string name="banner_no_connection">Байланыш жок. Интернетти текшерип, жаңылаңыз — сервер жооп бергенде карта пайда болот.</string>
     <string name="banner_error">Маалыматтарды жаңылоо мүмкүн болгон жок: %1$s</string>
     <string name="banner_error_cached">Маалыматтарды жаңылоо мүмкүн болгон жок: %1$s. Акыркы жүктөлгөнү көрсөтүлдү.</string>
@@ -134,4 +134,9 @@
     <string name="update_needs_permission">Бул булактан орнотууга уруксат бериңиз</string>
     <string name="update_needs_permission_hint">Колдонмо өз жаңылоосун орнотушу үчүн Android ачык уруксат талап кылат.</string>
     <string name="update_open_permission">Жөндөөлөрдү ачуу</string>
+    <string name="filters_show">Станцияларды көрсөтүү: %1$d</string>
+    <string name="filters_hint_solo">Керектүүсүн гана калтыруу үчүн басыңыз</string>
+    <string name="station_status_line">%1$d бош · %2$d бош эмес · %3$d байланышта эмес</string>
+    <string name="station_merged_show">Тизмени көрсөтүү</string>
+    <string name="station_merged_hide">Тизмени жашыруу</string>
 </resources>
